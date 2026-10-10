@@ -27,6 +27,10 @@
                 <div><dt class="text-slate-500">Mulai</dt><dd class="font-medium text-slate-900">{{ $leave->start_date->translatedFormat('d F Y') }}</dd></div>
                 <div><dt class="text-slate-500">Selesai</dt><dd class="font-medium text-slate-900">{{ $leave->end_date->translatedFormat('d F Y') }}</dd></div>
                 <div><dt class="text-slate-500">Total Hari Kerja</dt><dd class="font-medium text-slate-900">{{ rtrim(rtrim(number_format($leave->total_days, 2, ',', '.'), '0'), ',') }} hari</dd></div>
+                @php($bal = $leave->employee->leaveBalances->firstWhere('leave_type_id', $leave->leave_type_id))
+                @if($bal !== null)
+                    <div><dt class="text-slate-500">Sisa Saldo {{ $leave->leaveType->name ?? '' }}</dt><dd class="font-medium text-slate-900">{{ rtrim(rtrim(number_format($bal->balance, 2, ',', '.'), '0'), ',') }} hari</dd></div>
+                @endif
                 <div><dt class="text-slate-500">Diajukan</dt><dd class="font-medium text-slate-900">{{ $leave->requested_at?->translatedFormat('d F Y H:i') ?? '—' }}</dd></div>
                 @if($leave->approver)
                     <div><dt class="text-slate-500">Diputuskan Oleh</dt><dd class="font-medium text-slate-900">{{ $leave->approver->name }}</dd></div>

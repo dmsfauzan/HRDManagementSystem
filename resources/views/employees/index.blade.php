@@ -3,6 +3,9 @@
 
     <x-page-header title="Karyawan" subtitle="Kelola data karyawan.">
         <x-slot:actions>
+            @can('employees.import')
+                <a href="{{ route('employees.import.create') }}"><x-secondary-button>Impor CSV</x-secondary-button></a>
+            @endcan
             <a href="{{ route('employees.create') }}">
                 <x-primary-button>Tambah Karyawan</x-primary-button>
             </a>

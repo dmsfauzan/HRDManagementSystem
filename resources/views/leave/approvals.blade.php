@@ -15,6 +15,7 @@
                             <th class="py-2 pr-4 font-medium">Jenis</th>
                             <th class="py-2 pr-4 font-medium">Periode</th>
                             <th class="py-2 pr-4 font-medium">Hari</th>
+                            <th class="py-2 pr-4 font-medium">Sisa Saldo</th>
                             <th class="py-2 pr-4 font-medium"></th>
                         </tr>
                     </thead>
@@ -28,6 +29,14 @@
                                 <td class="py-3 pr-4 text-slate-700">{{ $leave->leaveType->name ?? '—' }}</td>
                                 <td class="py-3 pr-4 text-slate-600">{{ $leave->start_date->translatedFormat('d M Y') }} &ndash; {{ $leave->end_date->translatedFormat('d M Y') }}</td>
                                 <td class="py-3 pr-4 text-slate-600">{{ rtrim(rtrim(number_format($leave->total_days, 2, ',', '.'), '0'), ',') }}</td>
+                                <td class="py-3 pr-4 text-slate-600">
+                                    @php($bal = $leave->employee->leaveBalances->firstWhere('leave_type_id', $leave->leave_type_id))
+                                    @if($bal !== null)
+                                        {{ rtrim(rtrim(number_format($bal->balance, 2, ',', '.'), '0'), ',') }} hari
+                                    @else
+                                        <span class="text-slate-400">—</span>
+                                    @endif
+                                </td>
                                 <td class="py-3 pr-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('leave.show', $leave) }}" class="text-sm text-slate-600 hover:text-slate-900">Detail</a>

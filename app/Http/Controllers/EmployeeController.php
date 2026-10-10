@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\WorkSchedule;
+use App\Services\EmployeeImportService;
 use App\Services\EmployeeService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,10 @@ class EmployeeController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct(private readonly EmployeeService $service) {}
+    public function __construct(
+        private readonly EmployeeService $service,
+        private readonly EmployeeImportService $importService,
+    ) {}
 
     public function index(Request $request): View|RedirectResponse
     {
@@ -158,5 +162,44 @@ class EmployeeController extends Controller
             'managers' => Employee::where('employment_status', 'active')->orderBy('full_name')->get(),
             'schedules' => WorkSchedule::where('is_active', true)->orderBy('name')->get(),
         ];
+    }
+
+    public function importCreate(): View
+    {
+        abort_unless(request()->user()->can('employees.import'), 403);
+
+        return view('employees.import');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->can('employees.import'), 403);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ], [
+            'file.required' => 'Berkas CSV wajib diunggah.',
+            'file.mimes' => 'Berkas harus berformat CSV.',
+        ]);
+
+        $result = $this->importService->import($request->file('file'));
+
+        return redirect()->route('employees.import.create')->with('import_result', $result);
+    }
+
+    public function importTemplate(): StreamedResponse
+    {
+        abort_unless(request()->user()->can('employees.import'), 403);
+
+        $headers = ['employee_id', 'full_name', 'email', 'phone', 'department_code', 'position_code', 'manager_employee_id', 'join_date', 'employment_type', 'employment_status'];
+        $sample = ['EMP-100', 'Nama Karyawan', 'email@contoh.co.id', '081234567890', 'IT', 'IT-DEV', 'IT-001', date('Y-m-d'), 'permanent', 'active'];
+
+        return response()->streamDownload(function () use ($headers, $sample) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($out, $headers);
+            fputcsv($out, $sample);
+            fclose($out);
+        }, 'template-impor-karyawan.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

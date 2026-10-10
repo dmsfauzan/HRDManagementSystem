@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\LeaveDecided;
 use App\Notifications\LeaveSubmitted;
 use App\Services\LeaveService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,7 +66,7 @@ class LeaveController extends Controller
         $user = $request->user();
         abort_unless($user->can('leave.manage') || $user->can('leave.approve'), 403);
 
-        $query = LeaveRequest::with(['employee.department', 'leaveType'])
+        $query = LeaveRequest::with(['employee.department', 'leaveType', 'approver'])
             ->where('status', 'pending');
 
         if ($user->can('leave.manage')) {
@@ -76,7 +77,9 @@ class LeaveController extends Controller
             $query->whereRaw('1=0');
         }
 
-        $requests = $query->latest()->paginate(15)->withQueryString();
+        $requests = $query
+            ->with(['employee.leaveBalances.leaveType'])
+            ->latest()->paginate(15)->withQueryString();
 
         return view('leave.approvals', compact('requests'));
     }
@@ -135,7 +138,7 @@ class LeaveController extends Controller
     {
         $this->authorize('view', $leave);
 
-        $leave->load(['employee.department', 'employee.position', 'leaveType', 'approver', 'approvalActions.actor']);
+        $leave->load(['employee.department', 'employee.position', 'employee.leaveBalances.leaveType', 'leaveType', 'approver', 'approvalActions.actor']);
 
         return view('leave.show', compact('leave'));
     }
@@ -160,6 +163,67 @@ class LeaveController extends Controller
         $this->notifyApprovers($leave->fresh());
 
         return back()->with('success', 'Pengajuan cuti dibatalkan.');
+    }
+
+    public function calendar(Request $request): View
+    {
+        $this->authorize('viewAny', LeaveRequest::class);
+
+        $user = $request->user();
+
+        $monthParam = $request->string('month', Carbon::today('Asia/Jakarta')->format('Y-m'))->toString();
+        $first = Carbon::createFromFormat('Y-m', $monthParam, 'Asia/Jakarta')?->startOfDay() ?? Carbon::today('Asia/Jakarta')->startOfMonth();
+        $monthStart = $first->copy()->startOfMonth();
+        $monthEnd = $first->copy()->endOfMonth();
+
+        $query = LeaveRequest::with(['employee', 'leaveType'])
+            ->whereIn('status', ['approved', 'pending'])
+            ->whereDate('start_date', '<=', $monthEnd->toDateString())
+            ->whereDate('end_date', '>=', $monthStart->toDateString());
+
+        if ($user->can('leave.manage')) {
+            // semua
+        } elseif ($user->hasRole('manager') && $user->employee) {
+            $query->where(function ($q) use ($user) {
+                $q->where('employee_id', $user->employee->id)
+                    ->orWhereHas('employee', fn ($sub) => $sub->where('manager_id', $user->employee->id));
+            });
+        } else {
+            $query->where('employee_id', $user->employee?->id ?? 0);
+        }
+
+        $byDay = [];
+        foreach ($query->orderBy('start_date')->get() as $leave) {
+            $cursor = Carbon::parse($leave->start_date)->max($monthStart);
+            $end = Carbon::parse($leave->end_date)->min($monthEnd);
+            while ($cursor->lte($end)) {
+                if ($cursor->isWeekday()) {
+                    $byDay[$cursor->toDateString()][] = $leave;
+                }
+                $cursor->addDay();
+            }
+        }
+
+        $gridStart = $monthStart->copy()->startOfWeek(Carbon::MONDAY);
+        $gridEnd = $monthEnd->copy()->endOfWeek(Carbon::SUNDAY);
+        $weeks = [];
+        $cursor = $gridStart->copy();
+        while ($cursor->lte($gridEnd)) {
+            $week = [];
+            for ($i = 0; $i < 7; $i++) {
+                $week[] = $cursor->copy();
+                $cursor->addDay();
+            }
+            $weeks[] = $week;
+        }
+
+        return view('leave.calendar', [
+            'weeks' => $weeks,
+            'byDay' => $byDay,
+            'month' => $monthStart,
+            'prevMonth' => $monthStart->copy()->subMonth()->format('Y-m'),
+            'nextMonth' => $monthStart->copy()->addMonth()->format('Y-m'),
+        ]);
     }
 
     public function attachment(LeaveRequest $leave): StreamedResponse

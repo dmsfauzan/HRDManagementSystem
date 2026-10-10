@@ -17,6 +17,7 @@ class RoleAndPermissionSeeder extends Seeder
         'audit_logs.view',
         'employees.manage',
         'employees.view',
+        'employees.import',
         'departments.manage',
         'positions.manage',
         'attendance.manage',
@@ -40,7 +41,7 @@ class RoleAndPermissionSeeder extends Seeder
         $rolePermissions = [
             'super_admin' => self::PERMISSIONS,
             'hrd_admin' => [
-                'employees.manage', 'employees.view',
+                'employees.manage', 'employees.view', 'employees.import',
                 'departments.manage', 'positions.manage',
                 'attendance.manage', 'attendance.view_own',
                 'leave.manage', 'leave.view_own', 'leave.approve', 'leave.balances_manage',

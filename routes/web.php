@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveBalanceController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +32,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/profile/employee', [SelfServiceController::class, 'edit'])->name('profile.employee.edit');
+    Route::put('/profile/employee', [SelfServiceController::class, 'update'])->name('profile.employee.update');
+
+    Route::get('employees/import', [EmployeeController::class, 'importCreate'])->name('employees.import.create');
+    Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import.store');
+    Route::get('employees/import/template', [EmployeeController::class, 'importTemplate'])->name('employees.import.template');
 
     Route::get('employees/{employee}/photo', [EmployeeController::class, 'photo'])
         ->name('employees.photo');
@@ -56,6 +66,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::patch('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
 
     Route::get('leave/approvals', [LeaveController::class, 'approvals'])->name('leave.approvals');
+    Route::get('leave/calendar', [LeaveController::class, 'calendar'])->name('leave.calendar');
     Route::get('leave/create', [LeaveController::class, 'create'])->name('leave.create');
     Route::post('leave', [LeaveController::class, 'store'])->name('leave.store');
     Route::get('leave', [LeaveController::class, 'index'])->name('leave.index');
@@ -93,6 +104,18 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::resource('holidays', HolidayController::class)->except(['show']);
     Route::resource('work-schedules', WorkScheduleController::class)->except(['show']);
+
+    Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+    Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::patch('announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
+    Route::patch('announcements/{announcement}/unpublish', [AnnouncementController::class, 'unpublish'])->name('announcements.unpublish');
+    Route::delete('announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+    Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
     Route::middleware('permission:departments.manage')->group(function () {
         Route::resource('departments', DepartmentController::class);
