@@ -111,6 +111,21 @@
                     </div>
                 </div>
                 <div>
+                    <p class="px-3 mb-2 text-[11px] font-semibold tracking-widest text-slate-400">PENGATURAN KEHADIRAN</p>
+                    <div class="space-y-1">
+                        @hasanyrole('hrd_admin|super_admin')
+                        <a href="{{ route('work-schedules.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('work-schedules.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"/></svg>
+                            Jadwal Kerja
+                        </a>
+                        <a href="{{ route('holidays.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('holidays.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                            Hari Libur
+                        </a>
+                        @endhasanyrole
+                    </div>
+                </div>
+                <div>
                     <p class="px-3 mb-2 text-[11px] font-semibold tracking-widest text-slate-400">LAINNYA</p>
                     <div class="space-y-1">
                         @hasanyrole('hrd_admin|super_admin')
@@ -164,6 +179,10 @@
                 @can('viewAny', \App\Models\AttendanceCorrection::class)
                     <a href="{{ route('attendance.corrections.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('attendance.corrections.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600' }}">Koreksi</a>
                 @endcan
+                @hasanyrole('hrd_admin|super_admin')
+                    <a href="{{ route('work-schedules.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('work-schedules.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600' }}">Jadwal</a>
+                    <a href="{{ route('holidays.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('holidays.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600' }}">Hari Libur</a>
+                @endhasanyrole
                 @can('viewAny', \App\Models\User::class)
                     <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('users.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600' }}">Pengguna</a>
                 @endcan

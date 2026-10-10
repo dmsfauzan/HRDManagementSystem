@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AttendanceStatus;
 use App\Models\AttendanceRecord;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\LeaveRequest;
+use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,10 +32,34 @@ class DashboardController extends Controller
     private function hrdDashboard()
     {
         $today = Carbon::today('Asia/Jakarta');
+        $todayStr = $today->toDateString();
+        $service = app(AttendanceService::class);
 
         $totalActiveEmployees = Employee::where('employment_status', 'active')->count();
-        $presentToday = AttendanceRecord::whereDate('work_date', $today)->whereIn('status', ['present', 'late'])->count();
-        $lateToday = AttendanceRecord::whereDate('work_date', $today)->where('status', 'late')->count();
+
+        $isHoliday = Holiday::whereDate('date', $todayStr)->exists();
+
+        $expectedIds = $isHoliday
+            ? collect()
+            : Employee::with('workSchedule')
+                ->where('employment_status', 'active')
+                ->get()
+                ->filter(fn (Employee $e) => $service->isScheduledWorkDay($e, $today))
+                ->pluck('id');
+
+        $presentToday = AttendanceRecord::whereDate('work_date', $todayStr)
+            ->whereIn('status', AttendanceStatus::presentLike())->count();
+        $lateToday = AttendanceRecord::whereDate('work_date', $todayStr)
+            ->where('status', AttendanceStatus::Late->value)->count();
+
+        $presentExpected = AttendanceRecord::whereDate('work_date', $todayStr)
+            ->whereIn('employee_id', $expectedIds)
+            ->whereIn('status', AttendanceStatus::presentLike())->count();
+        $leaveExpected = AttendanceRecord::whereDate('work_date', $todayStr)
+            ->whereIn('employee_id', $expectedIds)
+            ->whereIn('status', [AttendanceStatus::Leave->value, AttendanceStatus::Permit->value])->count();
+        $absentToday = max(0, $expectedIds->count() - $presentExpected - $leaveExpected);
+
         $pendingLeaves = LeaveRequest::where('status', 'pending')->count();
         $employeesPerDepartment = Department::withCount(['employees' => fn ($q) => $q->where('employment_status', 'active')])->get();
         $recentEmployees = Employee::with(['department', 'position'])->latest()->take(5)->get();
@@ -40,9 +67,9 @@ class DashboardController extends Controller
         $recentAttendance = AttendanceRecord::with('employee')->latest('work_date')->take(6)->get();
 
         return view('dashboard.hrd', compact(
-            'totalActiveEmployees', 'presentToday', 'lateToday', 'pendingLeaves',
+            'totalActiveEmployees', 'presentToday', 'lateToday', 'absentToday', 'pendingLeaves',
             'employeesPerDepartment', 'recentEmployees', 'recentLeaves', 'recentAttendance',
-            'today'
+            'today', 'isHoliday'
         ));
     }
 
@@ -56,7 +83,7 @@ class DashboardController extends Controller
 
         $teamCount = (clone $teamQuery)->where('employment_status', 'active')->count();
         $teamIds = (clone $teamQuery)->pluck('id');
-        $teamPresentToday = AttendanceRecord::whereIn('employee_id', $teamIds)->whereDate('work_date', $today)->whereIn('status', ['present', 'late'])->count();
+        $teamPresentToday = AttendanceRecord::whereIn('employee_id', $teamIds)->whereDate('work_date', $today)->whereIn('status', AttendanceStatus::presentLike())->count();
         $teamPendingLeaves = LeaveRequest::whereIn('employee_id', $teamIds)->where('status', 'pending')->count();
         $members = (clone $teamQuery)->with(['department', 'position'])->where('employment_status', 'active')->get();
         $pendingLeaves = LeaveRequest::with(['employee', 'leaveType'])->whereIn('employee_id', $teamIds)->where('status', 'pending')->latest()->take(8)->get();

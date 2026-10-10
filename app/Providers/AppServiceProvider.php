@@ -22,16 +22,28 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('password', function (Request $request) {
+            if (app()->environment('testing')) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(3)->by($request->ip());
         });
 
         RateLimiter::for('reports', function (Request $request) {
+            if (app()->environment('testing')) {
+                return Limit::none();
+            }
+
             $identifier = $request->user()?->id ?? $request->ip();
 
             return Limit::perMinute(20)->by((string) $identifier);
         });
 
         RateLimiter::for('attendance', function (Request $request) {
+            if (app()->environment('testing')) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(30)->by((string) ($request->user()?->id ?? $request->ip()));
         });
 

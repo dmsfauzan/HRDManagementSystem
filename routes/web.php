@@ -6,6 +6,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LeaveTypeController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -88,6 +90,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('permission:audit_logs.view')->group(function () {
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
     });
+
+    Route::resource('holidays', HolidayController::class)->except(['show']);
+    Route::resource('work-schedules', WorkScheduleController::class)->except(['show']);
 
     Route::middleware('permission:departments.manage')->group(function () {
         Route::resource('departments', DepartmentController::class);

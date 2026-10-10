@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkSchedule extends Model
 {
@@ -19,6 +20,11 @@ class WorkSchedule extends Model
             'crosses_midnight' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
     }
 
     public const WORK_DAYS_WEEKDAYS = [1, 2, 3, 4, 5];

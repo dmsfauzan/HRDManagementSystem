@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Dashboard HRD</x-slot>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         <x-stat-card label="Karyawan Aktif" :value="$totalActiveEmployees" accent="emerald">
             <x-slot:icon><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-2a3 3 0 00-3-3H10a3 3 0 00-3 3v2m8 0H9"/></svg></x-slot:icon>
         </x-stat-card>
@@ -10,6 +10,9 @@
         </x-stat-card>
         <x-stat-card label="Terlambat" :value="$lateToday" accent="amber">
             <x-slot:icon><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></x-slot:icon>
+        </x-stat-card>
+        <x-stat-card label="Tidak Hadir" :value="$absentToday" accent="red" :hint="$isHoliday ? 'Hari libur' : 'Hari kerja'">
+            <x-slot:icon><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></x-slot:icon>
         </x-stat-card>
         <x-stat-card label="Cuti Menunggu" :value="$pendingLeaves" accent="violet">
             <x-slot:icon><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"/></svg></x-slot:icon>
