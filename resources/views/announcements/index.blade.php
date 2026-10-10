@@ -43,8 +43,11 @@
                                         <button type="submit" class="text-xs px-2.5 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300">Tarik</button>
                                     </form>
                                 @endunless
-                                <form method="POST" action="{{ route('announcements.destroy', $announcement) }}" onsubmit="return confirm('Hapus pengumuman ini?')">@csrf @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800">Hapus</button>
+                                <form method="POST" action="{{ route('announcements.destroy', $announcement) }}">@csrf @method('DELETE')
+                                    <x-confirm-modal title="Hapus Pengumuman" message="Pengumuman ini akan dihapus permanen." confirm-label="Hapus">
+                                        <x-slot:trigger><button type="button" class="text-xs text-red-600 hover:text-red-800">Hapus</button></x-slot:trigger>
+                                        <x-slot:action><button type="submit" class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700">Hapus</button></x-slot:action>
+                                    </x-confirm-modal>
                                 </form>
                             </div>
                         @endif

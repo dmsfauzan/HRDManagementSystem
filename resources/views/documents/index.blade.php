@@ -72,9 +72,11 @@
                                 <td class="py-3 pr-4 text-right space-x-3">
                                     <a href="{{ route('documents.download', $document) }}" class="text-sm text-emerald-700 hover:underline">Unduh</a>
                                     @if($canManage)
-                                        <form method="POST" action="{{ route('documents.destroy', $document) }}" onsubmit="return confirm('Hapus dokumen ini?')" class="inline">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-sm text-red-600 hover:text-red-800">Hapus</button>
+                                        <form method="POST" action="{{ route('documents.destroy', $document) }}" class="inline">@csrf @method('DELETE')
+                                            <x-confirm-modal title="Hapus Dokumen" message="Dokumen ini akan dihapus permanen dari penyimpanan." confirm-label="Hapus">
+                                                <x-slot:trigger><button type="button" class="text-sm text-red-600 hover:text-red-800">Hapus</button></x-slot:trigger>
+                                                <x-slot:action><button type="submit" class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700">Hapus</button></x-slot:action>
+                                            </x-confirm-modal>
                                         </form>
                                     @endif
                                 </td>

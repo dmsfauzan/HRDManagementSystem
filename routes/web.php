@@ -36,6 +36,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/profile/employee', [SelfServiceController::class, 'edit'])->name('profile.employee.edit');
     Route::put('/profile/employee', [SelfServiceController::class, 'update'])->name('profile.employee.update');
 
+    Route::get('/profile/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
+    Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+
     Route::get('employees/import', [EmployeeController::class, 'importCreate'])->name('employees.import.create');
     Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import.store');
     Route::get('employees/import/template', [EmployeeController::class, 'importTemplate'])->name('employees.import.template');

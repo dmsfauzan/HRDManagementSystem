@@ -17,5 +17,9 @@ class DatabaseSeeder extends Seeder
             DemoUserSeeder::class,
             DemoActivitySeeder::class,
         ]);
+
+        if (app()->isLocal()) {
+            $this->call([DemoRosterSeeder::class]);
+        }
     }
 }

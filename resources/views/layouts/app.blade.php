@@ -260,7 +260,11 @@
                     </span>
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open=!open" class="flex items-center gap-2 p-1.5 rounded-full hover:bg-slate-100">
-                            <span class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+                            @if(auth()->user()->avatar_path)
+                                <img src="{{ route('profile.avatar') }}" alt="" class="w-8 h-8 rounded-full object-cover">
+                            @else
+                                <span class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+                            @endif
                             <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 20 20"><path fill="currentColor" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
                         </button>
                         <div x-show="open" @click.outside="open=false" x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1">
