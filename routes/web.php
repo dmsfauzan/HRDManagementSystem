@@ -13,9 +13,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Spatie\Permission\Models\Role;
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
@@ -40,8 +40,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::get('attendance/today', [AttendanceController::class, 'create'])->name('attendance.create');
-    Route::post('attendance/check-in', [AttendanceController::class, 'store'])->name('attendance.store');
-    Route::post('attendance/check-out', [AttendanceController::class, 'checkout'])->name('attendance.checkout');
+    Route::post('attendance/check-in', [AttendanceController::class, 'store'])->middleware('throttle:attendance')->name('attendance.store');
+    Route::post('attendance/check-out', [AttendanceController::class, 'checkout'])->middleware('throttle:attendance')->name('attendance.checkout');
     Route::get('attendance/{attendance}', [AttendanceController::class, 'show'])->name('attendance.show');
 
     Route::get('attendance-corrections', [AttendanceCorrectionController::class, 'index'])->name('attendance.corrections.index');
@@ -70,7 +70,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('leave-types', [LeaveTypeController::class, 'store'])->name('leave.types.store');
     Route::put('leave-types/{type}', [LeaveTypeController::class, 'update'])->name('leave.types.update');
 
-    Route::middleware('permission:reports.view')->group(function () {
+    Route::middleware(['permission:reports.view', 'throttle:reports'])->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/employees', [ReportController::class, 'employees'])->name('reports.employees');
         Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
@@ -81,9 +81,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
         Route::patch('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
-        Route::get('roles', function () {
-            return view('roles.index', ['roles' => Role::withCount('users')->with('permissions')->get()]);
-        })->middleware('permission:roles.manage')->name('roles.index');
+        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::patch('roles/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.permissions.update');
     });
 
     Route::middleware('permission:audit_logs.view')->group(function () {

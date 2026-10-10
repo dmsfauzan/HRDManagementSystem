@@ -98,14 +98,52 @@ Semua password: `password`
 - ✅ P4 Laporan & QA: laporan karyawan/absensi/cuti + filter + ekspor CSV, audit log (Super Admin) dengan integrasi aksi penting, 85 feature test.
 - ✅ P5 Pengguna & Role: CRUD akun, assign role, aktif/nonaktif (blokir login akun nonaktif), reset password, halaman role & permission — khusus Super Admin. Total 96 feature test.
 
+## Penyempurnaan (Sprint)
+
+- Sprint A Keamanan & Produksi (Selesai): Git, registrasi publik dinonaktifkan, rate limiting, security headers, error pages berbranding, lokalisasi `lang/id`, hardening env & dokumentasi backup/deploy, audit login-logout & perubahan permission, halaman Role kini editable per permission.
+
 ## Akun & akses audit
 
 Audit log hanya dapat diakses role `super_admin`. HRD mengakses laporan tanpa audit log.
 
 ## Deployment production
 
-1. `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` sesuai domain.
-2. Selalu akses lewat HTTPS.
-3. `php artisan migrate --force` (jangan `migrate:fresh`).
-4. `npm run build` untuk aset produksi.
-5. Siapkan backup & pemulihan database berkala.
+1. `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` sesuai domain (HTTPS).
+2. Aktifkan proteksi sesi: `SESSION_ENCRYPT=true`, `SESSION_SECURE_COOKIE=true`, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax`.
+3. Konfigurasi email produksi (`MAIL_MAILER=smtp` + kredensial) agar reset password berfungsi (default `log` hanya untuk development).
+4. Install & build:
+   ```sh
+   composer install --no-dev --optimize-autoloader
+   php artisan migrate --force
+   npm ci && npm run build
+   php artisan config:cache && php artisan route:cache && php artisan view:cache
+   ```
+5. Arahkan document root web server ke folder `public/`.
+6. Pastikan registrasi publik **nonaktif** (memang sudah) — akun dibuat lewat menu Pengguna oleh Super Admin.
+
+### Backup & pemulihan database
+
+Backup harian (contoh, jalankan via cron/Task Scheduler):
+
+```sh
+mysqldump -u root -p HRDManagementSystem > backup/hris_$(date +%Y%m%d).sql
+```
+
+Restore:
+
+```sh
+mysql -u root -p HRDManagementSystem < backup/hris_YYYYMMDD.sql
+```
+
+Simpan berkas backup di luar `public/` (mis. `storage/backups`) dan lindungi aksesnya.
+
+### Checklist keamanan
+
+- [x] Registrasi publik dinonaktifkan.
+- [x] Akun nonaktif tidak dapat login (dicek saat autentikasi + middleware).
+- [x] Rate limiting: login, reset password, check-in/out, ekspor laporan.
+- [x] Security headers (nosniff, SAMEORIGIN, Referrer-Policy, Permissions-Policy, HSTS di produksi).
+- [x] CSRF protection (bawaan Laravel).
+- [x] Authorization berlapis (route + policy + query scoping).
+- [x] Audit log aksi sensitif (tanpa menyimpan password).
+- [ ] HTTPS + backup otomatis (konfigurasi infrastruktur).
