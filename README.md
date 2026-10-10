@@ -101,6 +101,10 @@ Semua password: `password`
 ## Penyempurnaan (Sprint)
 
 - Sprint A Keamanan & Produksi (Selesai): Git, registrasi publik dinonaktifkan, rate limiting, security headers, error pages berbranding, lokalisasi `lang/id`, hardening env & dokumentasi backup/deploy, audit login-logout & perubahan permission, halaman Role kini editable per permission.
+- Sprint B Kelengkapan Fitur (Selesai): PHP Enums (attendance/leave/employment), command `attendance:mark-absent` + scheduler (kartu Tidak Hadir live di dashboard), CRUD Hari Libur & Jadwal Kerja, CRUD Pengumuman HR + broadcast notifikasi, Modul Dokumen HR (privat), self-service profil karyawan, Kalender Cuti, Impor Karyawan CSV + template, sisa saldo saat approval.
+- Sprint C/D/E Kualitas, Testing, UI (Selesai): `pint.json`, GitHub Actions CI, seeder demo kaya (15 karyawan + riwayat), unit test service, avatar pengguna, komponen `confirm-modal`.
+
+Total: **121 test hijau** (115 feature + 6 unit).
 
 ## Akun & akses audit
 
