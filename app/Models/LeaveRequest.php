@@ -53,6 +53,16 @@ class LeaveRequest extends Model
         return $this->morphMany(ApprovalAction::class, 'approvable');
     }
 
+    public function approvalSteps(): MorphMany
+    {
+        return $this->morphMany(ApprovalStep::class, 'approvable')->orderBy('level');
+    }
+
+    public function pendingStep(): ?ApprovalStep
+    {
+        return $this->approvalSteps()->where('status', ApprovalStep::STATUS_PENDING)->first();
+    }
+
     public function isFinal(): bool
     {
         return in_array($this->status, [self::STATUS_APPROVED, self::STATUS_REJECTED, self::STATUS_CANCELLED], true);

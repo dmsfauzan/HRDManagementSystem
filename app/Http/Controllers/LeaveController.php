@@ -66,20 +66,19 @@ class LeaveController extends Controller
         $user = $request->user();
         abort_unless($user->can('leave.manage') || $user->can('leave.approve'), 403);
 
-        $query = LeaveRequest::with(['employee.department', 'leaveType', 'approver'])
+        $query = LeaveRequest::with(['employee.department', 'employee.leaveBalances.leaveType', 'leaveType', 'approvalSteps'])
             ->where('status', 'pending');
 
         if ($user->can('leave.manage')) {
             // semua pending
         } elseif ($user->hasRole('manager') && $user->employee) {
-            $query->whereHas('employee', fn ($q) => $q->where('manager_id', $user->employee->id));
+            $query->whereHas('employee', fn ($q) => $q->where('manager_id', $user->employee->id))
+                ->whereHas('approvalSteps', fn ($q) => $q->where('status', 'pending')->where('approver_role', 'manager'));
         } else {
             $query->whereRaw('1=0');
         }
 
-        $requests = $query
-            ->with(['employee.leaveBalances.leaveType'])
-            ->latest()->paginate(15)->withQueryString();
+        $requests = $query->latest()->paginate(15)->withQueryString();
 
         return view('leave.approvals', compact('requests'));
     }
@@ -138,7 +137,7 @@ class LeaveController extends Controller
     {
         $this->authorize('view', $leave);
 
-        $leave->load(['employee.department', 'employee.position', 'employee.leaveBalances.leaveType', 'leaveType', 'approver', 'approvalActions.actor']);
+        $leave->load(['employee.department', 'employee.position', 'employee.leaveBalances.leaveType', 'leaveType', 'approver', 'approvalActions.actor', 'approvalSteps.approver']);
 
         return view('leave.show', compact('leave'));
     }

@@ -30,6 +30,14 @@ class LeaveManagementTest extends TestCase
         ]);
     }
 
+    private function hrdUser(): User
+    {
+        $user = User::factory()->create();
+        $user->assignRole('hrd_admin');
+
+        return $user;
+    }
+
     private function employeeUser(string $role = 'karyawan', array $attrs = []): array
     {
         $user = User::factory()->create();
@@ -118,6 +126,7 @@ class LeaveManagementTest extends TestCase
     {
         [$managerUser, $manager] = $this->employeeUser('manager');
         [$empUser, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
+        $hrdUser = $this->hrdUser();
 
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
@@ -127,13 +136,40 @@ class LeaveManagementTest extends TestCase
         ]);
         $leave = LeaveRequest::first();
 
+        // Level 1 (Manager) menyetujui; pengajuan masih menunggu level 2 (HRD).
         $this->actingAs($managerUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved'])->assertRedirect();
+        $this->assertSame('pending', $leave->fresh()->status);
+        $this->assertEquals(0, (float) LeaveBalance::where('employee_id', $employee->id)->value('used'));
 
+        // Level 2 (HRD) menyetujui; saldo baru dipotong setelah semua level setuju.
+        $this->actingAs($hrdUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved'])->assertRedirect();
+
+        $this->assertSame('approved', $leave->fresh()->status);
         $balance = LeaveBalance::where('employee_id', $employee->id)->where('year', 2026)->first();
         $this->assertEquals(9, (float) $balance->balance);
         $this->assertEquals(3, (float) $balance->used);
         $this->assertDatabaseHas('leave_balance_transactions', ['leave_request_id' => $leave->id, 'type' => 'debit']);
         $this->assertDatabaseHas('notifications', ['notifiable_id' => $empUser->id]);
+    }
+
+    public function test_short_leave_needs_single_level_approval(): void
+    {
+        [$managerUser, $manager] = $this->employeeUser('manager');
+        [$empUser, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
+
+        // 2 hari kerja (di bawah ambang 3 hari) -> cukup Manager.
+        $this->actingAs($empUser)->post('/leave', [
+            'leave_type_id' => $this->annual->id,
+            'start_date' => '2026-10-12',
+            'end_date' => '2026-10-13',
+            'reason' => 'Cuti singkat.',
+        ]);
+        $leave = LeaveRequest::first();
+
+        $this->actingAs($managerUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved'])->assertRedirect();
+
+        $this->assertSame('approved', $leave->fresh()->status);
+        $this->assertEquals(10, (float) LeaveBalance::where('employee_id', $employee->id)->value('balance'));
     }
 
     public function test_rejection_does_not_change_balance(): void
@@ -164,6 +200,7 @@ class LeaveManagementTest extends TestCase
     {
         [$managerUser, $manager] = $this->employeeUser('manager');
         [$empUser, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
+        $hrdUser = $this->hrdUser();
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
             'start_date' => '2026-10-12',
@@ -173,7 +210,9 @@ class LeaveManagementTest extends TestCase
         $leave = LeaveRequest::first();
 
         $this->actingAs($managerUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved']);
-        $this->actingAs($managerUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved']);
+        $this->actingAs($hrdUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved']);
+        // Persetujuan ulang tidak boleh memotong saldo dua kali.
+        $this->actingAs($hrdUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved']);
 
         $balance = LeaveBalance::where('employee_id', $employee->id)->where('year', 2026)->first();
         $this->assertEquals(9, (float) $balance->balance);
@@ -225,6 +264,8 @@ class LeaveManagementTest extends TestCase
         ]);
         $leave = LeaveRequest::first();
         $this->actingAs($managerUser)->patch("/leave/{$leave->id}/decide", ['action' => 'approved']);
+        $this->actingAs($this->hrdUser())->patch("/leave/{$leave->id}/decide", ['action' => 'approved']);
+        $this->assertSame('approved', $leave->fresh()->status);
 
         $this->actingAs($empUser)->patch("/leave/{$leave->id}/cancel")->assertRedirect();
 

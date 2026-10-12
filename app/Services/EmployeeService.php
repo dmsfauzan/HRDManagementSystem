@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Employee;
-use App\Models\LeaveBalance;
-use App\Models\LeaveType;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -54,12 +52,7 @@ class EmployeeService
             }
 
             $year = (int) now('Asia/Jakarta')->format('Y');
-            LeaveType::where('is_active', true)->where('tracks_balance', true)->get()->each(function (LeaveType $type) use ($employee, $year) {
-                LeaveBalance::firstOrCreate(
-                    ['employee_id' => $employee->id, 'leave_type_id' => $type->id, 'year' => $year],
-                    ['balance' => $type->default_quota, 'used' => 0]
-                );
-            });
+            app(LeaveService::class)->ensureBalances($employee, $year);
 
             AuditLogger::log('employee.created', $employee, [], $this->snapshot($employee));
 

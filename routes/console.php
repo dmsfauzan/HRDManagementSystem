@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('attendance:mark-absent')
     ->dailyAt('23:55')
     ->timezone('Asia/Jakarta');
+
+Schedule::command('leave:carry-over')
+    ->yearlyOn(1, 1, '02:00')
+    ->timezone('Asia/Jakarta');

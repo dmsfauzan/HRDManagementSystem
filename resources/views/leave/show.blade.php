@@ -69,6 +69,22 @@
             @endif
         </x-card>
 
+        <x-card title="Alur Persetujuan">
+            <div class="space-y-3">
+                @forelse($leave->approvalSteps as $step)
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-slate-800">Level {{ $step->level }} — {{ \Illuminate\Support\Str::headline($step->approver_role) }}</p>
+                            <p class="text-xs text-slate-500">{{ $step->approver?->name ?? 'Belum diputuskan' }} @if($step->acted_at) &middot; {{ $step->acted_at->translatedFormat('d M Y H:i') }} @endif</p>
+                        </div>
+                        <x-status-badge :status="$step->status" />
+                    </div>
+                @empty
+                    <x-empty-state title="Belum ada alur persetujuan" />
+                @endforelse
+            </div>
+        </x-card>
+
         <x-card title="Riwayat Keputusan">
             <div class="space-y-4">
                 @forelse($leave->approvalActions as $action)

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LeaveType extends Model
 {
-    protected $fillable = ['code', 'name', 'is_paid', 'default_quota', 'tracks_balance', 'requires_attachment', 'is_active'];
+    protected $fillable = ['code', 'name', 'is_paid', 'default_quota', 'tracks_balance', 'carry_max_days', 'requires_attachment', 'is_active'];
 
     protected function casts(): array
     {
@@ -17,6 +17,7 @@ class LeaveType extends Model
             'requires_attachment' => 'boolean',
             'is_active' => 'boolean',
             'default_quota' => 'decimal:2',
+            'carry_max_days' => 'decimal:2',
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ApprovalAction;
+use App\Models\ApprovalStep;
 use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\LeaveBalance;
@@ -25,9 +26,95 @@ class LeaveService
         LeaveType::where('is_active', true)->where('tracks_balance', true)->get()->each(function (LeaveType $type) use ($employee, $year) {
             LeaveBalance::firstOrCreate(
                 ['employee_id' => $employee->id, 'leave_type_id' => $type->id, 'year' => $year],
-                ['balance' => $type->default_quota, 'used' => 0]
+                ['balance' => $this->proratedQuota($employee, $type, $year), 'used' => 0]
             );
         });
+    }
+
+    /**
+     * Kuota cuti tahunan dengan prorate untuk karyawan yang bergabung pada tahun berjalan.
+     */
+    public function proratedQuota(Employee $employee, LeaveType $type, int $year): float
+    {
+        $quota = (float) $type->default_quota;
+
+        $join = $employee->join_date;
+        if ($join && (int) $join->format('Y') === $year) {
+            $month = (int) $join->format('n');
+            $quota = round($quota * (13 - $month) / 12, 2);
+        }
+
+        return max(0.0, $quota);
+    }
+
+    /**
+     * Proses carry-over saldo dari tahun sebelumnya ke tahun tujuan.
+     * Sisa di atas batas carry_max_days dicatat sebagai kedaluwarsa (expired).
+     *
+     * @return array{carried:int,expired:int}
+     */
+    public function carryOver(int $targetYear): array
+    {
+        $fromYear = $targetYear - 1;
+        $carried = 0;
+        $expired = 0;
+
+        LeaveType::where('is_active', true)->where('tracks_balance', true)->get()->each(function (LeaveType $type) use ($fromYear, $targetYear, &$carried, &$expired) {
+            LeaveBalance::where('leave_type_id', $type->id)
+                ->where('year', $fromYear)
+                ->where('balance', '>', 0)
+                ->with('employee')
+                ->get()
+                ->each(function (LeaveBalance $prev) use ($type, $targetYear, &$carried, &$expired) {
+                    DB::transaction(function () use ($prev, $type, $targetYear, &$carried, &$expired) {
+                        $prev = LeaveBalance::whereKey($prev->id)->lockForUpdate()->first();
+                        if (! $prev || (float) $prev->balance <= 0) {
+                            return;
+                        }
+
+                        $remaining = (float) $prev->balance;
+                        $maxCarry = (float) ($type->carry_max_days ?? config('leave.carry_over_default_max_days', 2));
+                        $carry = min($remaining, $maxCarry);
+                        $expire = round($remaining - $carry, 2);
+
+                        if ($carry > 0) {
+                            $target = LeaveBalance::firstOrCreate(
+                                ['employee_id' => $prev->employee_id, 'leave_type_id' => $type->id, 'year' => $targetYear],
+                                ['balance' => 0, 'used' => 0]
+                            );
+                            $target->balance = (float) $target->balance + $carry;
+                            $target->save();
+
+                            LeaveBalanceTransaction::create([
+                                'leave_balance_id' => $target->id,
+                                'type' => 'credit',
+                                'amount' => $carry,
+                                'balance_after' => $target->balance,
+                                'description' => "Carry-over saldo {$type->name} dari {$prev->year}",
+                            ]);
+                            $carried++;
+                        }
+
+                        if ($expire > 0) {
+                            LeaveBalanceTransaction::create([
+                                'leave_balance_id' => $prev->id,
+                                'type' => 'expired',
+                                'amount' => -1 * $expire,
+                                'balance_after' => $carry,
+                                'description' => "Kedaluwarsa saldo {$type->name} tahun {$prev->year}",
+                            ]);
+                            $expired++;
+                        }
+
+                        $prev->balance = 0;
+                        $prev->save();
+                    });
+                });
+        });
+
+        AuditLogger::log('leave.carry_over', null, [], ['year' => $targetYear, 'carried' => $carried, 'expired' => $expired]);
+
+        return ['carried' => $carried, 'expired' => $expired];
     }
 
     /**
@@ -104,6 +191,8 @@ class LeaveService
                 $request->save();
             }
 
+            $this->createApprovalSteps($request);
+
             AuditLogger::log('leave.submitted', $request, [], [
                 'employee_id' => $request->employee_id,
                 'leave_type_id' => $request->leave_type_id,
@@ -114,6 +203,66 @@ class LeaveService
 
             return $request;
         });
+    }
+
+    /**
+     * Bentuk langkah persetujuan: Manager, lalu HRD bila melewati ambang hari.
+     */
+    private function createApprovalSteps(LeaveRequest $request): void
+    {
+        $levels = ['manager'];
+
+        $threshold = (int) config('leave.multi_level_min_days', 3);
+        if ((float) $request->total_days >= $threshold) {
+            $levels[] = 'hrd_admin';
+        }
+
+        foreach ($levels as $index => $role) {
+            ApprovalStep::create([
+                'approvable_type' => $request->getMorphClass(),
+                'approvable_id' => $request->id,
+                'level' => $index + 1,
+                'approver_role' => $role,
+                'status' => ApprovalStep::STATUS_PENDING,
+            ]);
+        }
+    }
+
+    public function currentStep(LeaveRequest $request): ?ApprovalStep
+    {
+        return ApprovalStep::where('approvable_type', $request->getMorphClass())
+            ->where('approvable_id', $request->id)
+            ->where('status', ApprovalStep::STATUS_PENDING)
+            ->orderBy('level')
+            ->first();
+    }
+
+    /**
+     * Apakah user berwenang memutuskan langkah saat ini.
+     */
+    public function canDecideStep(User $user, LeaveRequest $request): bool
+    {
+        if ($request->status !== LeaveRequest::STATUS_PENDING) {
+            return false;
+        }
+
+        $step = $this->currentStep($request);
+        if (! $step) {
+            return false;
+        }
+
+        if ($step->approver_role === 'hrd_admin') {
+            return $user->can('leave.manage');
+        }
+
+        // Langkah manager: HRD dapat mengambil alih; manager hanya untuk bawahannya.
+        if ($user->can('leave.manage')) {
+            return true;
+        }
+
+        return $user->hasRole('manager')
+            && $user->employee
+            && $request->employee?->manager_id === $user->employee->id;
     }
 
     public function decide(LeaveRequest $request, User $approver, string $action, ?string $note = null): LeaveRequest
@@ -129,27 +278,60 @@ class LeaveService
                 throw ValidationException::withMessages(['status' => 'Pengajuan ini sudah diproses.']);
             }
 
-            $request->status = $action === 'approved' ? LeaveRequest::STATUS_APPROVED : LeaveRequest::STATUS_REJECTED;
-            $request->approver_id = $approver->id;
-            $request->decided_at = now();
-            $request->decision_note = $note;
-            $request->save();
+            $step = $this->currentStep($request);
+            if (! $step) {
+                throw ValidationException::withMessages(['status' => 'Tidak ada langkah persetujuan yang menunggu.']);
+            }
+
+            $step->update([
+                'status' => $action === 'approved' ? ApprovalStep::STATUS_APPROVED : ApprovalStep::STATUS_REJECTED,
+                'approver_id' => $approver->id,
+                'acted_at' => now(),
+                'notes' => $note,
+            ]);
 
             ApprovalAction::create([
                 'approvable_type' => $request->getMorphClass(),
                 'approvable_id' => $request->id,
                 'action' => $action,
                 'actor_id' => $approver->id,
-                'notes' => $note,
+                'notes' => ($note ? $note.' ' : '').'(Level '.$step->level.': '.$step->approver_role.')',
                 'acted_at' => now(),
             ]);
 
-            if ($request->status === LeaveRequest::STATUS_APPROVED && $request->leaveType?->tracks_balance) {
-                $this->debit($request, $approver, 'Persetujuan cuti '.$request->leaveType->name);
+            if ($action === 'rejected') {
+                $request->status = LeaveRequest::STATUS_REJECTED;
+                $request->approver_id = $approver->id;
+                $request->decided_at = now();
+                $request->decision_note = $note;
+                $request->save();
+
+                ApprovalStep::where('approvable_type', $request->getMorphClass())
+                    ->where('approvable_id', $request->id)
+                    ->where('status', ApprovalStep::STATUS_PENDING)
+                    ->update(['status' => ApprovalStep::STATUS_REJECTED, 'acted_at' => now()]);
+            } else {
+                $hasPending = ApprovalStep::where('approvable_type', $request->getMorphClass())
+                    ->where('approvable_id', $request->id)
+                    ->where('status', ApprovalStep::STATUS_PENDING)
+                    ->exists();
+
+                if (! $hasPending) {
+                    $request->status = LeaveRequest::STATUS_APPROVED;
+                    $request->approver_id = $approver->id;
+                    $request->decided_at = now();
+                    $request->decision_note = $note;
+                    $request->save();
+
+                    if ($request->leaveType?->tracks_balance) {
+                        $this->debit($request, $approver, 'Persetujuan cuti '.$request->leaveType->name);
+                    }
+                }
             }
 
             AuditLogger::log('leave.decided', $request, ['status' => 'pending'], [
                 'status' => $request->status,
+                'step_level' => $step->level,
                 'approver_id' => $approver->id,
             ]);
 
@@ -172,6 +354,11 @@ class LeaveService
 
             $request->status = LeaveRequest::STATUS_CANCELLED;
             $request->save();
+
+            ApprovalStep::where('approvable_type', $request->getMorphClass())
+                ->where('approvable_id', $request->id)
+                ->where('status', ApprovalStep::STATUS_PENDING)
+                ->update(['status' => ApprovalStep::STATUS_REJECTED, 'acted_at' => now()]);
 
             ApprovalAction::create([
                 'approvable_type' => $request->getMorphClass(),

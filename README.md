@@ -104,8 +104,9 @@ Semua password: `password`
 - Sprint B Kelengkapan Fitur (Selesai): PHP Enums (attendance/leave/employment), command `attendance:mark-absent` + scheduler (kartu Tidak Hadir live di dashboard), CRUD Hari Libur & Jadwal Kerja, CRUD Pengumuman HR + broadcast notifikasi, Modul Dokumen HR (privat), self-service profil karyawan, Kalender Cuti, Impor Karyawan CSV + template, sisa saldo saat approval.
 - Sprint C/D/E Kualitas, Testing, UI (Selesai): `pint.json`, GitHub Actions CI, seeder demo kaya (15 karyawan + riwayat), unit test service, avatar pengguna, komponen `confirm-modal`.
 - **Fase 1A (Selesai):** Pengelolaan sesi (lihat & cabut perangkat), notifikasi email + antrian (`ShouldQueue` + `toMail`), Lembur (Overtime: pengajuan + approval + audit), ekspor laporan **XLSX** (tanpa paket eksternal) & **PDF/Cetak**.
+- **Fase 1B (Selesai):** Kebijakan saldo lanjutan — prorate karyawan baru, carry-over tahunan berbatas (`leave:carry-over` + scheduler), kedaluwarsa saldo; **multi-level approval** cuti (Manager → HRD untuk ≥ ambang hari, `config/leave.php`).
 
-Total: **137 test hijau** (131 feature + 6 unit).
+Total: **143 test hijau** (137 feature + 6 unit).
 
 ## Antrian (Queue)
 

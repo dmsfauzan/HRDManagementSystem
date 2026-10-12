@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Services\LeaveService;
 
 class LeaveRequestPolicy
 {
@@ -33,17 +34,7 @@ class LeaveRequestPolicy
 
     public function decide(User $user, LeaveRequest $request): bool
     {
-        $canDecide = $user->can('leave.manage') || $user->can('leave.approve');
-        if (! $canDecide) {
-            return false;
-        }
-
-        if ($user->can('leave.manage')) {
-            return true;
-        }
-
-        return $user->hasRole('manager') && $user->employee
-            && $request->employee?->manager_id === $user->employee->id;
+        return app(LeaveService::class)->canDecideStep($user, $request);
     }
 
     public function cancel(User $user, LeaveRequest $request): bool
