@@ -9,9 +9,12 @@ use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Services\AuditLogger;
 use App\Services\CsvExporter;
+use App\Services\XlsxWriter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\LazyCollection;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
@@ -30,24 +33,20 @@ class ReportController extends Controller
         return view('reports.index', compact('stats'));
     }
 
-    public function employees(Request $request): View|StreamedResponse
+    public function employees(Request $request): View|StreamedResponse|BinaryFileResponse
     {
         $this->authorizeReports();
 
         $query = $this->employeeQuery($request);
+        $headers = CsvExporter::employeeHeaders();
+        $rows = fn (): LazyCollection => $query->cursor()->map(fn (Employee $e) => [
+            $e->employee_id, $e->full_name, $e->email, $e->department->name ?? '',
+            $e->position->name ?? '', $e->manager->full_name ?? '',
+            $e->join_date?->format('d/m/Y'), $e->employment_type, $e->employment_status,
+        ]);
 
-        if ($request->input('export') === 'csv') {
-            AuditLogger::log('report.exported', null, [], ['report' => 'employees', 'filters' => $request->only(['search', 'department_id', 'status'])]);
-
-            return CsvExporter::stream(
-                'laporan-karyawan-'.now()->format('Ymd-His').'.csv',
-                CsvExporter::employeeHeaders(),
-                $query->cursor()->map(fn (Employee $e) => [
-                    $e->employee_id, $e->full_name, $e->email, $e->department->name ?? '',
-                    $e->position->name ?? '', $e->manager->full_name ?? '',
-                    $e->join_date?->format('d/m/Y'), $e->employment_type, $e->employment_status,
-                ])
-            );
+        if ($response = $this->exportResponse($request, 'employees', 'laporan-karyawan', $headers, $rows, ['search', 'department_id', 'status'])) {
+            return $response;
         }
 
         $employees = $query->paginate(20)->withQueryString();
@@ -56,7 +55,7 @@ class ReportController extends Controller
         return view('reports.employees', compact('employees', 'departments'));
     }
 
-    public function attendance(Request $request): View|StreamedResponse
+    public function attendance(Request $request): View|StreamedResponse|BinaryFileResponse
     {
         $this->authorizeReports();
 
@@ -67,24 +66,21 @@ class ReportController extends Controller
         $this->applyDateFilter($query, $request);
         $query->orderByDesc('work_date');
 
-        if ($request->input('export') === 'csv') {
-            AuditLogger::log('report.exported', null, [], ['report' => 'attendance', 'filters' => $request->only(['department_id', 'status', 'period', 'from', 'to'])]);
+        $headers = CsvExporter::attendanceHeaders();
+        $rows = fn (): LazyCollection => $query->cursor()->map(fn (AttendanceRecord $r) => [
+            $r->work_date?->format('d/m/Y'),
+            $r->employee->employee_id ?? '',
+            $r->employee->full_name ?? '',
+            $r->employee->department->name ?? '',
+            $r->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '',
+            $r->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '',
+            $r->late_minutes,
+            $r->work_minutes,
+            $r->status,
+        ]);
 
-            return CsvExporter::stream(
-                'laporan-absensi-'.now()->format('Ymd-His').'.csv',
-                CsvExporter::attendanceHeaders(),
-                $query->cursor()->map(fn (AttendanceRecord $r) => [
-                    $r->work_date?->format('d/m/Y'),
-                    $r->employee->employee_id ?? '',
-                    $r->employee->full_name ?? '',
-                    $r->employee->department->name ?? '',
-                    $r->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '',
-                    $r->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '',
-                    $r->late_minutes,
-                    $r->work_minutes,
-                    $r->status,
-                ])
-            );
+        if ($response = $this->exportResponse($request, 'attendance', 'laporan-absensi', $headers, $rows, ['department_id', 'status', 'period', 'from', 'to'])) {
+            return $response;
         }
 
         $records = $query->paginate(25)->withQueryString();
@@ -93,7 +89,7 @@ class ReportController extends Controller
         return view('reports.attendance', compact('records', 'departments'));
     }
 
-    public function leaves(Request $request): View|StreamedResponse
+    public function leaves(Request $request): View|StreamedResponse|BinaryFileResponse
     {
         $this->authorizeReports();
 
@@ -105,24 +101,21 @@ class ReportController extends Controller
             ->when($request->filled('to'), fn ($q) => $q->whereDate('start_date', '<=', $request->date('to')))
             ->latest();
 
-        if ($request->input('export') === 'csv') {
-            AuditLogger::log('report.exported', null, [], ['report' => 'leaves', 'filters' => $request->only(['status', 'leave_type_id', 'department_id', 'from', 'to'])]);
+        $headers = CsvExporter::leaveHeaders();
+        $rows = fn (): LazyCollection => $query->cursor()->map(fn (LeaveRequest $l) => [
+            $l->employee->full_name ?? '',
+            $l->leaveType->name ?? '',
+            $l->start_date?->format('d/m/Y'),
+            $l->end_date?->format('d/m/Y'),
+            $l->total_days,
+            $l->reason,
+            $l->status,
+            $l->approver->name ?? '',
+            $l->decided_at?->format('d/m/Y H:i') ?? '',
+        ]);
 
-            return CsvExporter::stream(
-                'laporan-cuti-'.now()->format('Ymd-His').'.csv',
-                CsvExporter::leaveHeaders(),
-                $query->cursor()->map(fn (LeaveRequest $l) => [
-                    $l->employee->full_name ?? '',
-                    $l->leaveType->name ?? '',
-                    $l->start_date?->format('d/m/Y'),
-                    $l->end_date?->format('d/m/Y'),
-                    $l->total_days,
-                    $l->reason,
-                    $l->status,
-                    $l->approver->name ?? '',
-                    $l->decided_at?->format('d/m/Y H:i') ?? '',
-                ])
-            );
+        if ($response = $this->exportResponse($request, 'leaves', 'laporan-cuti', $headers, $rows, ['status', 'leave_type_id', 'department_id', 'from', 'to'])) {
+            return $response;
         }
 
         $requests = $query->paginate(20)->withQueryString();
@@ -130,6 +123,36 @@ class ReportController extends Controller
         $departments = Department::orderBy('name')->get();
 
         return view('reports.leaves', compact('requests', 'leaveTypes', 'departments'));
+    }
+
+    /**
+     * @param  callable():LazyCollection  $rows
+     */
+    private function exportResponse(Request $request, string $report, string $basename, array $headers, callable $rows, array $filterKeys): View|StreamedResponse|BinaryFileResponse|null
+    {
+        $format = $request->input('format', $request->input('export'));
+
+        if (! in_array($format, ['csv', 'xlsx', 'print'], true)) {
+            return null;
+        }
+
+        AuditLogger::log('report.exported', null, [], [
+            'report' => $report,
+            'format' => $format,
+            'filters' => $request->only($filterKeys),
+        ]);
+
+        $stamp = now()->format('Ymd-His');
+
+        return match ($format) {
+            'csv' => CsvExporter::stream("{$basename}-{$stamp}.csv", $headers, $rows()),
+            'xlsx' => XlsxWriter::download("{$basename}-{$stamp}.xlsx", $headers, $rows()),
+            'print' => view('reports.print', [
+                'title' => str($basename)->replace('-', ' ')->title()->toString(),
+                'headers' => $headers,
+                'rows' => $rows(),
+            ]),
+        };
     }
 
     private function employeeQuery(Request $request)

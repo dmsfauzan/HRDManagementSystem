@@ -13,11 +13,13 @@ use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OvertimeController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SelfServiceController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +40,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/profile/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
     Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+
+    Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index');
+    Route::delete('/sessions/{session}', [SessionController::class, 'destroy'])->name('sessions.destroy');
 
     Route::get('employees/import', [EmployeeController::class, 'importCreate'])->name('employees.import.create');
     Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import.store');
@@ -63,6 +68,12 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('attendance-corrections/create', [AttendanceCorrectionController::class, 'create'])->name('attendance.corrections.create');
     Route::post('attendance-corrections', [AttendanceCorrectionController::class, 'store'])->name('attendance.corrections.store');
     Route::patch('attendance-corrections/{correction}/decide', [AttendanceCorrectionController::class, 'decide'])->name('attendance.corrections.decide');
+
+    Route::get('overtime', [OvertimeController::class, 'index'])->name('overtime.index');
+    Route::get('overtime/create', [OvertimeController::class, 'create'])->name('overtime.create');
+    Route::post('overtime', [OvertimeController::class, 'store'])->name('overtime.store');
+    Route::patch('overtime/{overtime}/decide', [OvertimeController::class, 'decide'])->name('overtime.decide');
+    Route::patch('overtime/{overtime}/cancel', [OvertimeController::class, 'cancel'])->name('overtime.cancel');
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');

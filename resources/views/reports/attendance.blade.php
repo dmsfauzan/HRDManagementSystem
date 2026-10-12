@@ -3,9 +3,9 @@
 
     <x-page-header title="Rekap Absensi" subtitle="Kehadiran, keterlambatan, dan status lainnya.">
         <x-slot:actions>
-            <a href="{{ route('reports.attendance', request()->query() + ['export' => 'csv']) }}">
-                <x-secondary-button>Unduh CSV</x-secondary-button>
-            </a>
+            <a href="{{ route('reports.attendance', request()->query() + ['format' => 'xlsx']) }}"><x-secondary-button>Excel</x-secondary-button></a>
+            <a href="{{ route('reports.attendance', request()->query() + ['format' => 'print']) }}" target="_blank"><x-secondary-button>PDF / Cetak</x-secondary-button></a>
+            <a href="{{ route('reports.attendance', request()->query() + ['format' => 'csv']) }}"><x-secondary-button>CSV</x-secondary-button></a>
         </x-slot:actions>
     </x-page-header>
 

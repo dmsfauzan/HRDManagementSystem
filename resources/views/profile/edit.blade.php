@@ -54,6 +54,16 @@
             </div>
 
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-900">Sesi & Perangkat Aktif</h3>
+                        <p class="text-xs text-slate-500 mt-1">Lihat dan cabut sesi login di perangkat lain.</p>
+                    </div>
+                    <a href="{{ route('sessions.index') }}"><x-secondary-button type="button">Kelola</x-secondary-button></a>
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     @include('profile.partials.delete-user-form')
                 </div>

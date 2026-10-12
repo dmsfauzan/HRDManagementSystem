@@ -103,8 +103,24 @@ Semua password: `password`
 - Sprint A Keamanan & Produksi (Selesai): Git, registrasi publik dinonaktifkan, rate limiting, security headers, error pages berbranding, lokalisasi `lang/id`, hardening env & dokumentasi backup/deploy, audit login-logout & perubahan permission, halaman Role kini editable per permission.
 - Sprint B Kelengkapan Fitur (Selesai): PHP Enums (attendance/leave/employment), command `attendance:mark-absent` + scheduler (kartu Tidak Hadir live di dashboard), CRUD Hari Libur & Jadwal Kerja, CRUD Pengumuman HR + broadcast notifikasi, Modul Dokumen HR (privat), self-service profil karyawan, Kalender Cuti, Impor Karyawan CSV + template, sisa saldo saat approval.
 - Sprint C/D/E Kualitas, Testing, UI (Selesai): `pint.json`, GitHub Actions CI, seeder demo kaya (15 karyawan + riwayat), unit test service, avatar pengguna, komponen `confirm-modal`.
+- **Fase 1A (Selesai):** Pengelolaan sesi (lihat & cabut perangkat), notifikasi email + antrian (`ShouldQueue` + `toMail`), Lembur (Overtime: pengajuan + approval + audit), ekspor laporan **XLSX** (tanpa paket eksternal) & **PDF/Cetak**.
 
-Total: **121 test hijau** (115 feature + 6 unit).
+Total: **137 test hijau** (131 feature + 6 unit).
+
+## Antrian (Queue)
+
+Notifikasi email dikirim melalui queue. Untuk local:
+
+```sh
+php artisan queue:work
+```
+
+Di produksi jalankan worker dengan supervisor/systemd, dan pastikan `MAIL_MAILER` diset ke SMTP. Tabel `jobs`/`failed_jobs` sudah tersedia.
+
+## Ekspor laporan
+
+Halaman laporan menyediakan 3 format: **Excel (XLSX)**, **PDF/Cetak** (buka dialog cetak → Simpan PDF), dan **CSV**.
+XLSX dihasilkan tanpa dependensi eksternal (`app/Services/XlsxWriter.php`). Jika ingin PDF native, dapat ditambahkan `barryvdh/laravel-dompdf` saat Packagist terjangkau.
 
 ## Akun & akses audit
 
