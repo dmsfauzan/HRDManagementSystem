@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +59,27 @@ class Employee extends Model
     public function workSchedule(): BelongsTo
     {
         return $this->belongsTo(WorkSchedule::class);
+    }
+
+    public function scheduleAssignments(): HasMany
+    {
+        return $this->hasMany(ScheduleAssignment::class);
+    }
+
+    /**
+     * Jadwal kerja efektif untuk tanggal tertentu (roster mingguan bila ada,
+     * jika tidak kembali ke jadwal default karyawan).
+     */
+    public function scheduleForDate(CarbonInterface $date): ?WorkSchedule
+    {
+        $weekStart = Carbon::parse($date)->startOfWeek(CarbonInterface::MONDAY)->toDateString();
+
+        $assigned = $this->scheduleAssignments()
+            ->whereDate('week_start', $weekStart)
+            ->with('workSchedule')
+            ->first();
+
+        return $assigned?->workSchedule ?? $this->workSchedule;
     }
 
     public function attendanceRecords(): HasMany

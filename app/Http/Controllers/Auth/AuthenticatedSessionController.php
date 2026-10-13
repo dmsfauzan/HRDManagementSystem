@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\TwoFactorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,8 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function __construct(private readonly TwoFactorService $twoFactor) {}
+
     /**
      * Display the login view.
      */
@@ -25,6 +28,19 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+
+        $user = $request->user();
+
+        if ($user->two_factor_enabled) {
+            Auth::guard('web')->logout();
+
+            $request->session()->regenerate();
+            $request->session()->put('two_factor_user_id', $user->id);
+
+            $this->twoFactor->send($user);
+
+            return redirect()->route('two-factor.challenge');
+        }
 
         $request->session()->regenerate();
 

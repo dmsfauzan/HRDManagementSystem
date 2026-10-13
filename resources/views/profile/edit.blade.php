@@ -64,6 +64,27 @@
             </div>
 
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">Verifikasi Dua Faktor (2FA)</h2>
+                    <p class="mt-1 text-sm text-gray-600">Saat aktif, login akan meminta kode 6 digit yang dikirim ke email Anda.</p>
+                </header>
+
+                <div class="mt-6 flex items-center gap-3">
+                    <x-status-badge :status="auth()->user()->two_factor_enabled ? 'active' : 'inactive'" />
+                    <span class="text-sm text-slate-600">{{ auth()->user()->two_factor_enabled ? '2FA Aktif' : '2FA Nonaktif' }}</span>
+                </div>
+
+                <form method="POST" action="{{ auth()->user()->two_factor_enabled ? route('profile.two-factor.disable') : route('profile.two-factor.enable') }}" class="mt-4 flex items-end gap-3">
+                    @csrf @method('PATCH')
+                    <div class="max-w-xs">
+                        <x-input-label for="two_factor_password" value="Konfirmasi Password" />
+                        <x-text-input id="two_factor_password" name="password" type="password" class="mt-1 block w-full" required />
+                    </div>
+                    <x-primary-button>{{ auth()->user()->two_factor_enabled ? 'Nonaktifkan' : 'Aktifkan 2FA' }}</x-primary-button>
+                </form>
+            </div>
+
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     @include('profile.partials.delete-user-form')
                 </div>

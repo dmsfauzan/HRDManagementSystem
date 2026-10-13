@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -72,6 +73,36 @@ class ProfileController extends Controller
         abort_unless($user->avatar_path && Storage::disk('private')->exists($user->avatar_path), 404);
 
         return Storage::disk('private')->response($user->avatar_path);
+    }
+
+    public function enableTwoFactor(Request $request): RedirectResponse
+    {
+        $request->validate(['password' => ['required', 'current_password']], [
+            'password.required' => 'Masukkan password Anda untuk mengaktifkan 2FA.',
+        ]);
+
+        $request->user()->update(['two_factor_enabled' => true]);
+
+        AuditLogger::log('user.two_factor_enabled', $request->user());
+
+        return back()->with('success', 'Verifikasi dua faktor berhasil diaktifkan.');
+    }
+
+    public function disableTwoFactor(Request $request): RedirectResponse
+    {
+        $request->validate(['password' => ['required', 'current_password']], [
+            'password.required' => 'Masukkan password Anda untuk menonaktifkan 2FA.',
+        ]);
+
+        $request->user()->forceFill([
+            'two_factor_enabled' => false,
+            'two_factor_code' => null,
+            'two_factor_expires_at' => null,
+        ])->save();
+
+        AuditLogger::log('user.two_factor_disabled', $request->user());
+
+        return back()->with('success', 'Verifikasi dua faktor dinonaktifkan.');
     }
 
     /**

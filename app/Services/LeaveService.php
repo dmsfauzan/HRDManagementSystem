@@ -122,7 +122,6 @@ class LeaveService
      */
     public function calculateWorkingDays(Employee $employee, Carbon $start, Carbon $end): float
     {
-        $schedule = $employee->workSchedule;
         $holidays = Holiday::whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->pluck('date')
             ->map(fn ($d) => Carbon::parse($d)->toDateString())
@@ -131,6 +130,7 @@ class LeaveService
         $days = 0.0;
         $cursor = $start->copy();
         while ($cursor->lte($end)) {
+            $schedule = $employee->scheduleForDate($cursor);
             $isWorkDay = $schedule
                 ? $schedule->isWorkDay((int) $cursor->dayOfWeekIso)
                 : $cursor->isWeekday();

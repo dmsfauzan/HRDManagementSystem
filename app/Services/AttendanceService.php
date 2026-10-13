@@ -16,8 +16,9 @@ class AttendanceService
     {
         return DB::transaction(function () use ($employee, $ip) {
             $now = Carbon::now(tz());
-            $schedule = $employee->workSchedule;
-            $workDate = $this->resolveWorkDate($now, $schedule);
+            $baseSchedule = $employee->workSchedule;
+            $workDate = $this->resolveWorkDate($now, $baseSchedule);
+            $schedule = $employee->scheduleForDate(Carbon::parse($workDate)) ?? $baseSchedule;
 
             $record = AttendanceRecord::where('employee_id', $employee->id)
                 ->whereDate('work_date', $workDate)
@@ -89,7 +90,7 @@ class AttendanceService
             $checkOut = $correction->requested_check_out_at ?? $record->check_out_at;
 
             $workDate = $correction->work_date->toDateString();
-            $schedule = $record->employee?->workSchedule;
+            $schedule = $record->employee?->scheduleForDate($correction->work_date) ?? $record->employee?->workSchedule;
 
             $status = $record->status;
             $lateMinutes = $record->late_minutes;
@@ -150,7 +151,7 @@ class AttendanceService
 
     public function isScheduledWorkDay(Employee $employee, Carbon $date): bool
     {
-        $schedule = $employee->workSchedule;
+        $schedule = $employee->scheduleForDate($date);
 
         if (! $schedule) {
             return $date->isWeekday();

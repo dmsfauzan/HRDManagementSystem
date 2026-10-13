@@ -18,8 +18,10 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RosterController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\ShiftSwapController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +45,18 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index');
     Route::delete('/sessions/{session}', [SessionController::class, 'destroy'])->name('sessions.destroy');
+
+    Route::patch('/profile/two-factor/enable', [ProfileController::class, 'enableTwoFactor'])->name('profile.two-factor.enable');
+    Route::patch('/profile/two-factor/disable', [ProfileController::class, 'disableTwoFactor'])->name('profile.two-factor.disable');
+
+    Route::get('roster', [RosterController::class, 'index'])->name('roster.index');
+    Route::post('roster', [RosterController::class, 'store'])->name('roster.store');
+
+    Route::get('shift-swaps', [ShiftSwapController::class, 'index'])->name('shift-swaps.index');
+    Route::get('shift-swaps/create', [ShiftSwapController::class, 'create'])->name('shift-swaps.create');
+    Route::post('shift-swaps', [ShiftSwapController::class, 'store'])->name('shift-swaps.store');
+    Route::patch('shift-swaps/{shiftSwap}/decide', [ShiftSwapController::class, 'decide'])->name('shift-swaps.decide');
+    Route::patch('shift-swaps/{shiftSwap}/cancel', [ShiftSwapController::class, 'cancel'])->name('shift-swaps.cancel');
 
     Route::get('employees/import', [EmployeeController::class, 'importCreate'])->name('employees.import.create');
     Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import.store');
