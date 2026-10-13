@@ -47,7 +47,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('employees/import', [EmployeeController::class, 'importCreate'])->name('employees.import.create');
     Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import.store');
     Route::get('employees/import/template', [EmployeeController::class, 'importTemplate'])->name('employees.import.template');
-
+    Route::get('employees/trashed', [EmployeeController::class, 'trashed'])->name('employees.trashed');
     Route::get('employees/{employee}/photo', [EmployeeController::class, 'photo'])
         ->name('employees.photo');
 
@@ -57,6 +57,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('employees.activate');
 
     Route::resource('employees', EmployeeController::class);
+
+    Route::post('employees/bulk', [EmployeeController::class, 'bulk'])->name('employees.bulk');
+    Route::patch('employees/{employee}/offboard', [EmployeeController::class, 'offboard'])->name('employees.offboard');
+    Route::patch('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
+    Route::get('org-chart', [EmployeeController::class, 'orgChart'])->name('employees.org-chart');
 
     Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::get('attendance/today', [AttendanceController::class, 'create'])->name('attendance.create');

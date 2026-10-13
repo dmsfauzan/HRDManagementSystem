@@ -106,8 +106,10 @@ Semua password: `password`
 - **Fase 1A (Selesai):** Pengelolaan sesi (lihat & cabut perangkat), notifikasi email + antrian (`ShouldQueue` + `toMail`), Lembur (Overtime: pengajuan + approval + audit), ekspor laporan **XLSX** (tanpa paket eksternal) & **PDF/Cetak**.
 - **Fase 1B (Selesai):** Kebijakan saldo lanjutan — prorate karyawan baru, carry-over tahunan berbatas (`leave:carry-over` + scheduler), kedaluwarsa saldo; **multi-level approval** cuti (Manager → HRD untuk ≥ ambang hari, `config/leave.php`).
 - **Fase 2 (Selesai):** Kualitas — lapisan konsistensi timezone (`config('app.display_timezone')` + helper `tz()/tz_now()/tz_today()/to_tz()`; seluruh kode/view memakai helper), factory lengkap semua model, konfigurasi PHPStan/Larastan + skrip `composer analyse`, CI menambah langkah static analysis (opsional).
+- **Fase 3 (bagian 1 — Selesai):** Kebijakan password (min 12, huruf besar-kecil, angka; default global `Password::defaults()`), offboarding karyawan (resign + nonaktifkan akun + audit), pengingat kontrak (`contract_end_date` + command `contracts:remind` + scheduler harian), bulk activate/deactivate, arsip & restore soft-deleted, halaman **Struktur Organisasi**.
+- **Fase 3 (bagian 2 — berikutnya):** roster/shift mingguan + tukar shift, dan 2FA. Catatan: 2FA via `laravel/fortify` tertunda karena Packagist tidak terjangkau — akan diimplementasikan sebagai OTP email (tanpa dependensi) pada batch berikutnya.
 
-Total: **149 test hijau** (143 feature + 6 unit).
+Total: **157 test hijau** (151 feature + 6 unit).
 
 ## Antrian (Queue)
 

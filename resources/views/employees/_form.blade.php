@@ -102,6 +102,12 @@
                     <x-input-error :messages="$errors->get('join_date')" class="mt-1" />
                 </div>
                 <div>
+                    <x-input-label for="contract_end_date" value="Tanggal Berakhir Kontrak" />
+                    <x-text-input id="contract_end_date" name="contract_end_date" type="date" class="mt-1 block w-full"
+                        :value="old('contract_end_date', $employee?->contract_end_date?->format('Y-m-d'))" />
+                    <x-input-error :messages="$errors->get('contract_end_date')" class="mt-1" />
+                </div>
+                <div>
                     <x-input-label for="employment_type" value="Tipe Kepegawaian *" />
                     <x-select-input id="employment_type" name="employment_type" class="mt-1 block w-full">
                         @foreach(['permanent' => 'Tetap', 'contract' => 'Kontrak', 'intern' => 'Magang', 'probation' => 'Percobaan'] as $value => $label)

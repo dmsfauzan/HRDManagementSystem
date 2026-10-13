@@ -15,3 +15,7 @@ Schedule::command('attendance:mark-absent')
 Schedule::command('leave:carry-over')
     ->yearlyOn(1, 1, '02:00')
     ->timezone('Asia/Jakarta');
+
+Schedule::command('contracts:remind')
+    ->dailyAt('08:00')
+    ->timezone('Asia/Jakarta');

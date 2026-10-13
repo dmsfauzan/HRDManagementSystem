@@ -38,6 +38,7 @@ class EmployeeService
                 'manager_id' => $data['manager_id'] ?? null,
                 'work_schedule_id' => $data['work_schedule_id'] ?? null,
                 'join_date' => $data['join_date'],
+                'contract_end_date' => $data['contract_end_date'] ?? null,
                 'employment_type' => $data['employment_type'] ?? 'permanent',
                 'employment_status' => $data['employment_status'] ?? 'active',
                 'birth_date' => $data['birth_date'] ?? null,
@@ -75,6 +76,7 @@ class EmployeeService
                 'manager_id' => $data['manager_id'] ?? null,
                 'work_schedule_id' => $data['work_schedule_id'] ?? null,
                 'join_date' => $data['join_date'],
+                'contract_end_date' => $data['contract_end_date'] ?? $employee->contract_end_date,
                 'employment_type' => $data['employment_type'] ?? $employee->employment_type,
                 'employment_status' => $data['employment_status'] ?? $employee->employment_status,
                 'birth_date' => $data['birth_date'] ?? $employee->birth_date,
@@ -128,6 +130,28 @@ class EmployeeService
             }
 
             AuditLogger::log('employee.activated', $employee, $before, $this->snapshot($employee));
+
+            return $employee;
+        });
+    }
+
+    /**
+     * Offboarding: tandai karyawan resign, nonaktifkan akun, dan catat audit.
+     */
+    public function offboard(Employee $employee, ?string $reason = null): Employee
+    {
+        return DB::transaction(function () use ($employee, $reason) {
+            $before = $this->snapshot($employee);
+
+            $employee->employment_status = 'resigned';
+            $employee->save();
+
+            if ($employee->user) {
+                $employee->user->is_active = false;
+                $employee->user->save();
+            }
+
+            AuditLogger::log('employee.offboarded', $employee, $before, $this->snapshot($employee) + ['reason' => $reason]);
 
             return $employee;
         });

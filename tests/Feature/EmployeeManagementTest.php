@@ -83,7 +83,7 @@ class EmployeeManagementTest extends TestCase
             'employment_status' => 'active',
             'create_account' => true,
             'account_email' => 'budi.baru@hris.test',
-            'account_password' => 'rahasia123',
+            'account_password' => 'Rahasia123456',
             'account_role' => 'karyawan',
         ]);
 

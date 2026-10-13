@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\PasswordRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ResetUserPasswordRequest extends FormRequest
@@ -14,7 +15,7 @@ class ResetUserPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => PasswordRules::confirmed(),
         ];
     }
 
@@ -22,7 +23,7 @@ class ResetUserPasswordRequest extends FormRequest
     {
         return [
             'password.required' => 'Password baru wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
+            'password.min' => 'Password minimal 12 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ];
     }

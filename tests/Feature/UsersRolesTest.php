@@ -42,7 +42,7 @@ class UsersRolesTest extends TestCase
         $response = $this->actingAs($this->userWithRole('super_admin'))->post('/users', [
             'name' => 'Manajer Baru',
             'email' => 'manajer.baru@hris.test',
-            'password' => 'rahasia123',
+            'password' => 'Rahasia123456',
             'role' => 'manager',
             'is_active' => true,
         ]);
@@ -61,7 +61,7 @@ class UsersRolesTest extends TestCase
         $this->actingAs($this->userWithRole('super_admin'))->post('/users', [
             'name' => 'Duplikat',
             'email' => 'ada@hris.test',
-            'password' => 'rahasia123',
+            'password' => 'Rahasia123456',
             'role' => 'karyawan',
         ])->assertSessionHasErrors('email');
     }
@@ -121,12 +121,12 @@ class UsersRolesTest extends TestCase
         $target = $this->userWithRole('karyawan');
 
         $response = $this->actingAs($admin)->patch("/users/{$target->id}/reset-password", [
-            'password' => 'passwordbaru123',
-            'password_confirmation' => 'passwordbaru123',
+            'password' => 'PasswordBaru123',
+            'password_confirmation' => 'PasswordBaru123',
         ]);
 
         $response->assertRedirect();
-        $this->assertTrue(Hash::check('passwordbaru123', $target->fresh()->password));
+        $this->assertTrue(Hash::check('PasswordBaru123', $target->fresh()->password));
         $this->assertDatabaseHas('audit_logs', ['action' => 'user.password_reset']);
     }
 

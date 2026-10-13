@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\WorkSchedule;
+use App\Services\AuditLogger;
 use App\Services\EmployeeImportService;
 use App\Services\EmployeeService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -133,6 +134,84 @@ class EmployeeController extends Controller
 
         return redirect()->route('employees.show', $employee)
             ->with('success', "Karyawan {$employee->full_name} berhasil dinonaktifkan.");
+    }
+
+    public function offboard(Request $request, Employee $employee): RedirectResponse
+    {
+        $this->authorize('deactivate', $employee);
+
+        $reason = $request->string('reason')->toString() ?: null;
+        $this->service->offboard($employee, $reason);
+
+        return redirect()->route('employees.show', $employee)
+            ->with('success', "Karyawan {$employee->full_name} telah di-offboard (resign).");
+    }
+
+    public function bulk(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->can('employees.manage'), 403);
+
+        $data = $request->validate([
+            'action' => ['required', 'in:activate,deactivate'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:employees,id'],
+        ], [
+            'ids.required' => 'Pilih minimal satu karyawan.',
+            'action.required' => 'Aksi wajib dipilih.',
+        ]);
+
+        $employees = Employee::whereIn('id', $data['ids'])->get();
+        $count = 0;
+
+        foreach ($employees as $employee) {
+            if (! $request->user()->can('deactivate', $employee)) {
+                continue;
+            }
+            if ($data['action'] === 'deactivate') {
+                $this->service->deactivate($employee);
+            } else {
+                $this->service->activate($employee);
+            }
+            $count++;
+        }
+
+        return back()->with('success', "{$count} karyawan berhasil diproses.");
+    }
+
+    public function trashed(): View
+    {
+        abort_unless(auth()->user()->can('employees.manage'), 403);
+
+        $employees = Employee::onlyTrashed()->with(['department', 'position'])->latest('deleted_at')->paginate(20);
+
+        return view('employees.trashed', compact('employees'));
+    }
+
+    public function restore(int $employee): RedirectResponse
+    {
+        abort_unless(auth()->user()->can('employees.manage'), 403);
+
+        $record = Employee::onlyTrashed()->findOrFail($employee);
+        $record->restore();
+
+        AuditLogger::log('employee.restored', $record, [], ['employee_id' => $record->employee_id]);
+
+        return redirect()->route('employees.trashed')->with('success', "Karyawan {$record->full_name} berhasil dipulihkan.");
+    }
+
+    public function orgChart(): View
+    {
+        abort_unless(auth()->user()->can('employees.view'), 403);
+
+        $employees = Employee::with(['position', 'department'])
+            ->whereIn('employment_status', ['active', 'inactive'])
+            ->orderBy('full_name')
+            ->get();
+
+        $byManager = $employees->groupBy('manager_id');
+        $roots = $employees->whereNull('manager_id');
+
+        return view('employees.org-chart', compact('byManager', 'roots'));
     }
 
     public function activate(Employee $employee): RedirectResponse

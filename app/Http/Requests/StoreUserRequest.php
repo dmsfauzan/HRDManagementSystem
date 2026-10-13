@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Support\PasswordRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +19,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => PasswordRules::default(),
             'role' => ['required', Rule::exists('roles', 'name')],
             'is_active' => ['boolean'],
         ];
@@ -31,7 +32,7 @@ class StoreUserRequest extends FormRequest
             'email.required' => 'Email wajib diisi.',
             'email.unique' => 'Email sudah digunakan.',
             'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
+            'password.min' => 'Password minimal 12 karakter.',
             'role.required' => 'Role wajib dipilih.',
             'role.exists' => 'Role tidak valid.',
         ];

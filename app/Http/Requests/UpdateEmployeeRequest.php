@@ -26,6 +26,7 @@ class UpdateEmployeeRequest extends FormRequest
             'manager_id' => ['nullable', 'exists:employees,id', Rule::notIn([$employee?->id])],
             'work_schedule_id' => ['nullable', 'exists:work_schedules,id'],
             'join_date' => ['required', 'date'],
+            'contract_end_date' => ['nullable', 'date', 'after_or_equal:join_date'],
             'employment_type' => ['required', Rule::in(['permanent', 'contract', 'intern', 'probation'])],
             'employment_status' => ['required', Rule::in(['active', 'inactive', 'resigned'])],
             'birth_date' => ['nullable', 'date', 'before:today'],

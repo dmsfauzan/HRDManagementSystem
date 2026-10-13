@@ -3,6 +3,12 @@
 
     <x-page-header title="Karyawan" subtitle="Kelola data karyawan.">
         <x-slot:actions>
+            @can('employees.view')
+                <a href="{{ route('employees.org-chart') }}"><x-secondary-button>Struktur</x-secondary-button></a>
+            @endcan
+            @can('employees.manage')
+                <a href="{{ route('employees.trashed') }}"><x-secondary-button>Arsip</x-secondary-button></a>
+            @endcan
             @can('employees.import')
                 <a href="{{ route('employees.import.create') }}"><x-secondary-button>Impor CSV</x-secondary-button></a>
             @endcan
@@ -36,10 +42,24 @@
         @if($employees->isEmpty())
             <x-empty-state title="Belum ada karyawan yang sesuai" description="Sesuaikan filter atau tambah karyawan baru." />
         @else
+            @can('employees.manage')
+                <form method="POST" action="{{ route('employees.bulk') }}" id="bulk-form" class="flex flex-wrap items-center gap-2 mb-3">
+                    @csrf
+                    <span class="text-sm text-slate-500">Aksi massal:</span>
+                    <x-select-input name="action">
+                        <option value="deactivate">Nonaktifkan terpilih</option>
+                        <option value="activate">Aktifkan terpilih</option>
+                    </x-select-input>
+                    <x-secondary-button type="submit" onclick="return confirm('Proses aksi massal untuk karyawan terpilih?')">Terapkan</x-secondary-button>
+                </form>
+            @endcan
             <div class="overflow-x-auto -mx-5">
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-slate-100">
+                            @can('employees.manage')
+                                <th class="py-2 px-2 font-medium"><input type="checkbox" onclick="document.querySelectorAll('.row-check').forEach(c=>c.checked=this.checked)" class="rounded border-slate-300 text-emerald-600"></th>
+                            @endcan
                             <th class="py-2 px-2 font-medium">Karyawan</th>
                             <th class="py-2 pr-4 font-medium">Department / Jabatan</th>
                             <th class="py-2 pr-4 font-medium">Atasan</th>
@@ -51,6 +71,9 @@
                     <tbody class="divide-y divide-slate-50">
                         @foreach($employees as $employee)
                             <tr class="hover:bg-slate-50/60">
+                                @can('employees.manage')
+                                    <td class="py-3 px-2"><input type="checkbox" name="ids[]" value="{{ $employee->id }}" form="bulk-form" class="row-check rounded border-slate-300 text-emerald-600"></td>
+                                @endcan
                                 <td class="py-3 px-2">
                                     <a href="{{ route('employees.show', $employee) }}" class="flex items-center gap-3 group">
                                         @if($employee->photo_path)

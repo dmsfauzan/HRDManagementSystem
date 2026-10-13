@@ -15,7 +15,7 @@ class Employee extends Model
     protected $fillable = [
         'user_id', 'employee_id', 'full_name', 'email', 'phone',
         'department_id', 'position_id', 'manager_id', 'work_schedule_id',
-        'join_date', 'employment_type', 'employment_status',
+        'join_date', 'contract_end_date', 'contract_reminded_at', 'employment_type', 'employment_status',
         'birth_date', 'gender', 'address', 'photo_path',
     ];
 
@@ -23,6 +23,8 @@ class Employee extends Model
     {
         return [
             'join_date' => 'date',
+            'contract_end_date' => 'date',
+            'contract_reminded_at' => 'datetime',
             'birth_date' => 'date',
         ];
     }

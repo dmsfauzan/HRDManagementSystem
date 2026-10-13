@@ -14,6 +14,11 @@
                         @csrf @method('PATCH')
                         <x-secondary-button type="submit">Nonaktifkan</x-secondary-button>
                     </form>
+                    <form method="POST" action="{{ route('employees.offboard', $employee) }}" onsubmit="return confirm('Proses offboarding (resign) karyawan ini? Akun akan dinonaktifkan.')">
+                        @csrf @method('PATCH')
+                        <input type="hidden" name="reason" value="Resign">
+                        <x-secondary-button type="submit">Offboard</x-secondary-button>
+                    </form>
                 @else
                     <form method="POST" action="{{ route('employees.activate', $employee) }}">
                         @csrf @method('PATCH')
@@ -45,6 +50,9 @@
                 <div class="flex justify-between gap-4"><dt class="text-slate-500">Departemen</dt><dd class="text-slate-800 text-right">{{ $employee->department->name ?? '—' }}</dd></div>
                 <div class="flex justify-between gap-4"><dt class="text-slate-500">Atasan</dt><dd class="text-slate-800 text-right">{{ $employee->manager->full_name ?? '—' }}</dd></div>
                 <div class="flex justify-between gap-4"><dt class="text-slate-500">Mulai Kerja</dt><dd class="text-slate-800 text-right">{{ $employee->join_date?->translatedFormat('d M Y') }}</dd></div>
+                @if($employee->contract_end_date)
+                    <div class="flex justify-between gap-4"><dt class="text-slate-500">Akhir Kontrak</dt><dd class="text-slate-800 text-right">{{ $employee->contract_end_date->translatedFormat('d M Y') }}</dd></div>
+                @endif
                 <div class="flex justify-between gap-4"><dt class="text-slate-500">Jadwal Kerja</dt><dd class="text-slate-800 text-right">{{ $employee->workSchedule->name ?? '—' }}</dd></div>
             </dl>
         </x-card>

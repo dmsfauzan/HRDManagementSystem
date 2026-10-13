@@ -136,7 +136,7 @@ class ReportsAuditTest extends TestCase
             'employment_status' => 'active',
             'create_account' => true,
             'account_email' => 'pwd@example.com',
-            'account_password' => 'super-secret',
+            'account_password' => 'Rahasia123456',
             'account_role' => 'karyawan',
         ]);
 

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class StoreEmployeeRequest extends FormRequest
 {
@@ -24,6 +25,7 @@ class StoreEmployeeRequest extends FormRequest
             'manager_id' => ['nullable', 'exists:employees,id'],
             'work_schedule_id' => ['nullable', 'exists:work_schedules,id'],
             'join_date' => ['required', 'date'],
+            'contract_end_date' => ['nullable', 'date', 'after_or_equal:join_date'],
             'employment_type' => ['required', Rule::in(['permanent', 'contract', 'intern', 'probation'])],
             'employment_status' => ['required', Rule::in(['active', 'inactive', 'resigned'])],
             'birth_date' => ['nullable', 'date', 'before:today'],
@@ -33,7 +35,7 @@ class StoreEmployeeRequest extends FormRequest
 
             'create_account' => ['boolean'],
             'account_email' => ['required_if:create_account,true', 'nullable', 'email', 'max:150', Rule::unique('users', 'email')],
-            'account_password' => ['required_if:create_account,true', 'nullable', 'string', 'min:8'],
+            'account_password' => ['required_if:create_account,true', 'nullable', 'string', Password::min(12)->letters()->mixedCase()->numbers()],
             'account_role' => ['required_if:create_account,true', 'nullable', Rule::in(['manager', 'karyawan'])],
         ];
     }
