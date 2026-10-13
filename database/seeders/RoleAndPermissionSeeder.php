@@ -30,6 +30,8 @@ class RoleAndPermissionSeeder extends Seeder
         'leave.balances_manage',
         'reports.view',
         'documents.manage',
+        'recruitment.manage',
+        'recruitment.view',
     ];
 
     public function run(): void
@@ -45,11 +47,11 @@ class RoleAndPermissionSeeder extends Seeder
                 'departments.manage', 'positions.manage',
                 'attendance.manage', 'attendance.view_own',
                 'leave.manage', 'leave.view_own', 'leave.approve', 'leave.balances_manage',
-                'reports.view', 'documents.manage',
+                'reports.view', 'documents.manage', 'recruitment.manage', 'recruitment.view',
             ],
             'manager' => [
                 'employees.view', 'attendance.view_team', 'attendance.correction_approve',
-                'leave.view_own', 'leave.approve',
+                'leave.view_own', 'leave.approve', 'recruitment.view',
             ],
             'karyawan' => [
                 'employees.view', 'attendance.view_own', 'leave.view_own',

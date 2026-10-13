@@ -131,6 +131,25 @@
                     </div>
                 </div>
                 <div>
+                    <p class="px-3 mb-2 text-[11px] font-semibold tracking-widest text-slate-400">REKRUTMEN</p>
+                    <div class="space-y-1">
+                        @can('recruitment.view')
+                            <a href="{{ route('recruitment.postings.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('recruitment.postings.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                Lowongan
+                            </a>
+                            <a href="{{ route('recruitment.applications.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('recruitment.applications.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-2a3 3 0 00-3-3H10a3 3 0 00-3 3v2m8 0H9"/></svg>
+                                Pelamar
+                            </a>
+                            <a href="{{ route('recruitment.applications.kanban') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('recruitment.applications.kanban') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h4v12H4zM10 6h4v8h-4zM16 6h4v6h-4z"/></svg>
+                                Pipeline
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+                <div>
                     <p class="px-3 mb-2 text-[11px] font-semibold tracking-widest text-slate-400">PENGATURAN KEHADIRAN</p>
                     <div class="space-y-1">
                         @hasanyrole('hrd_admin|super_admin')

@@ -109,8 +109,15 @@ Semua password: `password`
 - **Fase 3 (bagian 1 — Selesai):** Kebijakan password (min 12, huruf besar-kecil, angka; default global `Password::defaults()`), offboarding karyawan (resign + nonaktifkan akun + audit), pengingat kontrak (`contract_end_date` + command `contracts:remind` + scheduler harian), bulk activate/deactivate, arsip & restore soft-deleted, halaman **Struktur Organisasi**.
 - **Fase 3 (bagian 2 — Selesai):** Roster/shift **mingguan** (`schedule_assignments`, jadwal efektif per tanggal dipakai absensi & cuti), **tukar shift** (pengajuan + approval manager/HRD yang menukar jadwal mingguan), **2FA OTP email** (kolom 2FA di users, `TwoFactorService`, notifikasi kode, halaman challenge, toggle di profil) — tanpa dependensi eksternal.
 - **Fase 4 (Selesai):** REST API `/api/v1` dengan **token mandiri** (tabel `api_tokens`, `ApiTokenService`, middleware `auth.api`, rate limit 60/menit) — karena Sanctum tidak dapat dipasang; UI kelola token di Profil; endpoint me/attendance/leave/announcements. Operasional: endpoint `/health` (DB + queue), perintah `db:backup` (mysqldump + prune) terjadwal mingguan. Multi-cabang ditunda.
+- **Fase 5 Rekrutmen/ATS (Selesai):** portal karir publik `/karir` (lamar tanpa login, CV privat, honeypot + rate limit), CRUD lowongan (draft/terbit/tutup), pipeline kanban, detail pelamar, penjadwalan & hasil wawancara, **konversi hired → karyawan** sekali klik, notifikasi email/in-app, audit `recruitment.*`.
 
-Total: **177 test hijau** (171 feature + 6 unit).
+Total: **186 test hijau** (180 feature + 6 unit).
+
+## Rekrutmen (ATS)
+
+- Publik: `/karir` (lowongan terbit) → lamar dengan CV (disimpan privat).
+- Internal (HRD): **Lowongan**, **Pelamar** (daftar + filter), **Pipeline** (kanban), detail pelamar (ubah tahap, jadwalkan wawancara, catat hasil, konversi ke karyawan).
+- Alur status: `applied → screening → interview → offer → hired` (+ `rejected`/`withdrawn`), divalidasi state machine.
 
 ## REST API
 

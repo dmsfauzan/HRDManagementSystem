@@ -5,12 +5,15 @@ use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\CareerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LeaveTypeController;
@@ -33,6 +36,13 @@ Route::get('/', function () {
 });
 
 Route::get('/health', [HealthController::class, 'index'])->name('health');
+
+// Portal karir publik
+Route::get('/karir', [CareerController::class, 'index'])->name('career.index');
+Route::get('/karir/lamaran/sukses', [CareerController::class, 'success'])->name('career.success');
+Route::get('/karir/{job}', [CareerController::class, 'show'])->name('career.show');
+Route::post('/karir/{job}/lamar', [CareerController::class, 'apply'])
+    ->middleware('throttle:apply')->name('career.apply');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -157,6 +167,30 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+    Route::middleware('permission:recruitment.view')->group(function () {
+        Route::get('recruitment/postings', [JobPostingController::class, 'index'])->name('recruitment.postings.index');
+        Route::get('recruitment/applications', [JobApplicationController::class, 'index'])->name('recruitment.applications.index');
+        Route::get('recruitment/applications/kanban', [JobApplicationController::class, 'kanban'])->name('recruitment.applications.kanban');
+        Route::get('recruitment/applications/{jobApplication}', [JobApplicationController::class, 'show'])->name('recruitment.applications.show');
+        Route::get('recruitment/applications/{jobApplication}/cv', [JobApplicationController::class, 'cv'])->name('recruitment.applications.cv');
+        Route::get('recruitment/applications/{jobApplication}/photo', [JobApplicationController::class, 'photo'])->name('recruitment.applications.photo');
+    });
+
+    Route::middleware('permission:recruitment.manage')->group(function () {
+        Route::get('recruitment/postings/create', [JobPostingController::class, 'create'])->name('recruitment.postings.create');
+        Route::post('recruitment/postings', [JobPostingController::class, 'store'])->name('recruitment.postings.store');
+        Route::get('recruitment/postings/{jobPosting}/edit', [JobPostingController::class, 'edit'])->name('recruitment.postings.edit');
+        Route::put('recruitment/postings/{jobPosting}', [JobPostingController::class, 'update'])->name('recruitment.postings.update');
+        Route::patch('recruitment/postings/{jobPosting}/publish', [JobPostingController::class, 'publish'])->name('recruitment.postings.publish');
+        Route::patch('recruitment/postings/{jobPosting}/close', [JobPostingController::class, 'close'])->name('recruitment.postings.close');
+        Route::delete('recruitment/postings/{jobPosting}', [JobPostingController::class, 'destroy'])->name('recruitment.postings.destroy');
+
+        Route::patch('recruitment/applications/{jobApplication}/stage', [JobApplicationController::class, 'moveStage'])->name('recruitment.applications.stage');
+        Route::post('recruitment/applications/{jobApplication}/interviews', [JobApplicationController::class, 'storeInterview'])->name('recruitment.applications.interviews.store');
+        Route::patch('recruitment/interviews/{interview}/result', [JobApplicationController::class, 'recordResult'])->name('recruitment.interviews.result');
+        Route::post('recruitment/applications/{jobApplication}/convert', [JobApplicationController::class, 'convert'])->name('recruitment.applications.convert');
+    });
 
     Route::middleware('permission:departments.manage')->group(function () {
         Route::resource('departments', DepartmentController::class);

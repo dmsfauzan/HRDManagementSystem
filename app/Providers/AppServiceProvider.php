@@ -56,6 +56,14 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by((string) $identifier);
         });
 
+        RateLimiter::for('apply', function (Request $request) {
+            if (app()->environment('testing')) {
+                return Limit::none();
+            }
+
+            return Limit::perHour(5)->by($request->ip());
+        });
+
         Event::listen(Login::class, function (Login $event) {
             AuditLogger::log('auth.login', $event->user, [], ['email' => $event->user->email]);
         });
