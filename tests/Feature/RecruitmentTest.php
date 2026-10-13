@@ -45,12 +45,16 @@ class RecruitmentTest extends TestCase
             'candidate_name' => 'Kandidat Satu',
             'candidate_email' => 'kandidat@example.com',
             'cv' => UploadedFile::fake()->create('cv.pdf', 100, 'application/pdf'),
-        ])->assertRedirect(route('career.success'));
+        ])->assertRedirect();
 
         $application = JobApplication::first();
         $this->assertNotNull($application);
+        $this->assertNotNull($application->status_token);
         Storage::disk('private')->assertExists($application->cv_path);
         $this->assertDatabaseHas('application_stage_logs', ['job_application_id' => $application->id, 'to_status' => 'applied']);
+
+        // Halaman status dapat diakses via token tanpa login.
+        $this->get(route('career.status', $application->status_token))->assertOk()->assertSee('Kandidat Satu');
     }
 
     public function test_draft_posting_is_not_public(): void
@@ -79,6 +83,8 @@ class RecruitmentTest extends TestCase
             'code' => 'JOB-TEST',
             'title' => 'Backend Developer',
             'description' => 'Deskripsi pekerjaan.',
+            'work_mode' => 'remote',
+            'experience_level' => 'mid',
             'employment_type' => 'permanent',
             'quota' => 2,
         ])->assertRedirect('/recruitment/postings');

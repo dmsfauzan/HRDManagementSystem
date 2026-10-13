@@ -6,6 +6,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CareerController;
+use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DocumentController;
@@ -39,10 +40,13 @@ Route::get('/health', [HealthController::class, 'index'])->name('health');
 
 // Portal karir publik
 Route::get('/karir', [CareerController::class, 'index'])->name('career.index');
-Route::get('/karir/lamaran/sukses', [CareerController::class, 'success'])->name('career.success');
+Route::get('/karir/lamaran/{token}', [CareerController::class, 'status'])->name('career.status');
+Route::get('/karir/lamaran/{token}/sukses', [CareerController::class, 'success'])->name('career.success');
 Route::get('/karir/{job}', [CareerController::class, 'show'])->name('career.show');
 Route::post('/karir/{job}/lamar', [CareerController::class, 'apply'])
     ->middleware('throttle:apply')->name('career.apply');
+
+Route::get('/company/logo', [CompanyProfileController::class, 'logo'])->name('company.logo');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -66,6 +70,11 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/profile/api-tokens', [ApiTokenController::class, 'index'])->name('api-tokens.index');
     Route::post('/profile/api-tokens', [ApiTokenController::class, 'store'])->name('api-tokens.store');
     Route::delete('/profile/api-tokens/{apiToken}', [ApiTokenController::class, 'destroy'])->name('api-tokens.destroy');
+
+    Route::middleware('permission:recruitment.manage')->group(function () {
+        Route::get('/settings/company', [CompanyProfileController::class, 'edit'])->name('settings.company.edit');
+        Route::patch('/settings/company', [CompanyProfileController::class, 'update'])->name('settings.company.update');
+    });
 
     Route::get('roster', [RosterController::class, 'index'])->name('roster.index');
     Route::post('roster', [RosterController::class, 'store'])->name('roster.store');

@@ -43,6 +43,26 @@
                         <x-text-input id="location" name="location" class="mt-1 block w-full" :value="old('location', $posting?->location)" />
                     </div>
                     <div>
+                        <x-input-label for="work_mode" value="Mode Kerja *" />
+                        <x-select-input id="work_mode" name="work_mode" class="mt-1 block w-full">
+                            @foreach(['onsite' => 'Onsite', 'hybrid' => 'Hybrid', 'remote' => 'Remote'] as $value => $label)
+                                <option value="{{ $value }}" @selected(old('work_mode', $posting?->work_mode ?? 'onsite') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </x-select-input>
+                    </div>
+                    <div>
+                        <x-input-label for="experience_level" value="Level *" />
+                        <x-select-input id="experience_level" name="experience_level" class="mt-1 block w-full">
+                            @foreach(['intern' => 'Intern', 'junior' => 'Junior', 'mid' => 'Mid', 'senior' => 'Senior', 'lead' => 'Lead'] as $value => $label)
+                                <option value="{{ $value }}" @selected(old('experience_level', $posting?->experience_level ?? 'junior') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </x-select-input>
+                    </div>
+                    <div>
+                        <x-input-label for="closes_at" value="Batas Lamaran" />
+                        <x-text-input id="closes_at" name="closes_at" type="date" class="mt-1 block w-full" :value="old('closes_at', $posting?->closes_at?->format('Y-m-d'))" />
+                    </div>
+                    <div>
                         <x-input-label for="employment_type" value="Tipe Kepegawaian *" />
                         <x-select-input id="employment_type" name="employment_type" class="mt-1 block w-full">
                             @foreach(['permanent' => 'Tetap', 'contract' => 'Kontrak', 'intern' => 'Magang', 'probation' => 'Percobaan'] as $value => $label)
@@ -61,8 +81,16 @@
                     <x-input-error :messages="$errors->get('description')" class="mt-1" />
                 </div>
                 <div>
+                    <x-input-label for="responsibilities" value="Tanggung Jawab" />
+                    <x-textarea-input id="responsibilities" name="responsibilities" rows="3" class="mt-1">{{ old('responsibilities', $posting?->responsibilities) }}</x-textarea-input>
+                </div>
+                <div>
                     <x-input-label for="requirements" value="Kualifikasi" />
                     <x-textarea-input id="requirements" name="requirements" rows="3" class="mt-1">{{ old('requirements', $posting?->requirements) }}</x-textarea-input>
+                </div>
+                <div>
+                    <x-input-label for="benefits" value="Benefit" />
+                    <x-textarea-input id="benefits" name="benefits" rows="3" class="mt-1">{{ old('benefits', $posting?->benefits) }}</x-textarea-input>
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>

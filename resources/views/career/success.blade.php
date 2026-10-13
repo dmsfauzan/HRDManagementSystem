@@ -5,10 +5,15 @@
         </div>
         <h1 class="mt-4 text-lg font-semibold text-slate-900">Lamaran Anda Terkirim</h1>
         <p class="mt-2 text-sm text-slate-600">
-            Terima kasih telah melamar. Kami akan menghubungi Anda melalui email
-            @if(session('application_email')) <strong>{{ session('application_email') }}</strong> @endif
-            jika profil Anda sesuai.
+            Terima kasih, {{ $application->candidate_name }}. Lamaran untuk posisi
+            <strong>{{ $application->jobPosting->title ?? '-' }}</strong> telah kami terima.
         </p>
-        <a href="{{ route('career.index') }}" class="mt-6 inline-block text-sm text-emerald-700 hover:underline">Lihat lowongan lain</a>
+
+        <div class="mt-6 p-4 rounded-lg bg-slate-50 text-left">
+            <p class="text-xs text-slate-500">Simpan tautan ini untuk memantau status lamaran Anda:</p>
+            <a href="{{ route('career.status', $application->status_token) }}" class="mt-1 block text-sm text-emerald-700 hover:underline break-all">{{ route('career.status', $application->status_token) }}</a>
+        </div>
+
+        <a href="{{ route('career.status', $application->status_token) }}" class="mt-6 inline-block px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700">Pantau Status</a>
     </div>
 </x-public-layout>

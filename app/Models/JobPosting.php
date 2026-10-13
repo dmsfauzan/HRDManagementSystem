@@ -19,9 +19,10 @@ class JobPosting extends Model
     public const STATUS_CLOSED = 'closed';
 
     protected $fillable = [
-        'code', 'title', 'department_id', 'position_id', 'description', 'requirements',
-        'location', 'employment_type', 'quota', 'salary_min', 'salary_max', 'show_salary',
-        'status', 'published_at', 'closed_at', 'created_by',
+        'code', 'title', 'department_id', 'position_id', 'description', 'responsibilities',
+        'requirements', 'benefits', 'location', 'work_mode', 'experience_level',
+        'employment_type', 'quota', 'salary_min', 'salary_max', 'show_salary',
+        'status', 'published_at', 'closes_at', 'closed_at', 'created_by',
     ];
 
     protected function casts(): array
@@ -32,6 +33,7 @@ class JobPosting extends Model
             'salary_max' => 'decimal:2',
             'show_salary' => 'boolean',
             'published_at' => 'datetime',
+            'closes_at' => 'date',
             'closed_at' => 'datetime',
         ];
     }
@@ -54,6 +56,20 @@ class JobPosting extends Model
     public function isPublished(): bool
     {
         return $this->status === self::STATUS_PUBLISHED;
+    }
+
+    /**
+     * Lowongan masih menerima lamaran (terbit + belum melewati batas waktu).
+     */
+    public function isOpen(): bool
+    {
+        return $this->isPublished()
+            && (! $this->closes_at || $this->closes_at->endOfDay()->isFuture());
+    }
+
+    public function isClosed(): bool
+    {
+        return ! $this->isOpen();
     }
 
     public function scopePublished($query)

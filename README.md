@@ -111,7 +111,17 @@ Semua password: `password`
 - **Fase 4 (Selesai):** REST API `/api/v1` dengan **token mandiri** (tabel `api_tokens`, `ApiTokenService`, middleware `auth.api`, rate limit 60/menit) — karena Sanctum tidak dapat dipasang; UI kelola token di Profil; endpoint me/attendance/leave/announcements. Operasional: endpoint `/health` (DB + queue), perintah `db:backup` (mysqldump + prune) terjadwal mingguan. Multi-cabang ditunda.
 - **Fase 5 Rekrutmen/ATS (Selesai):** portal karir publik `/karir` (lamar tanpa login, CV privat, honeypot + rate limit), CRUD lowongan (draft/terbit/tutup), pipeline kanban, detail pelamar, penjadwalan & hasil wawancara, **konversi hired → karyawan** sekali klik, notifikasi email/in-app, audit `recruitment.*`.
 
-Total: **186 test hijau** (180 feature + 6 unit).
+Total: **194 test hijau** (188 feature + 6 unit).
+
+## Portal Karir & Profil Perusahaan
+
+- **Profil perusahaan** (`/settings/company`, HRD): nama, tagline, tentang, logo, kontak, sosial — tampil di halaman karir & structured data.
+- **Halaman karir publik `/karir`**: hero perusahaan, pencarian + filter (departemen, mode kerja, tipe), kartu lowongan (badge mode/level/tipe/gaji, batas lamaran).
+- **Job preview `/karir/{job}`**: badge, jumlah pelamar, batas lamaran, tombol **bagikan** (WhatsApp/LinkedIn/salin), section Tanggung Jawab/Kualifikasi/Benefit, "Lowongan Lain", status **ditutup** otomatis.
+- **Lamar multi-step** (Data Diri → Berkas+tautan+ekspektasi gaji → Tinjau & Kirim) + **halaman status lamaran** via tautan bertoken (`/karir/lamaran/{token}`).
+- **SEO**: meta OpenGraph + **JSON-LD `JobPosting`** (termasuk `TELECOMMUTE` untuk remote, `baseSalary`, `validThrough`) untuk Google for Jobs.
+- Field lowongan baru: `work_mode`, `experience_level`, `responsibilities`, `benefits`, `closes_at`.
+- Catatan: **AI screening CV sengaja tidak diimplementasikan** (perlu layanan AI berbayar).
 
 ## Rekrutmen (ATS)
 

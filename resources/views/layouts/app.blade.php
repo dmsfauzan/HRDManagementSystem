@@ -146,6 +146,12 @@
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h4v12H4zM10 6h4v8h-4zM16 6h4v6h-4z"/></svg>
                                 Pipeline
                             </a>
+                            @can('recruitment.manage')
+                                <a href="{{ route('settings.company.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('settings.company.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
+                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l7-3 7 3z"/></svg>
+                                    Profil Perusahaan
+                                </a>
+                            @endcan
                         @endcan
                     </div>
                 </div>

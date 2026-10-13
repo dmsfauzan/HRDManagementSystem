@@ -46,9 +46,13 @@ class RecruitmentService
                 'education' => $data['education'] ?? null,
                 'experience_years' => $data['experience_years'] ?? null,
                 'source' => $data['source'] ?? 'career_page',
+                'linkedin_url' => $data['linkedin_url'] ?? null,
+                'portfolio_url' => $data['portfolio_url'] ?? null,
+                'expected_salary' => $data['expected_salary'] ?? null,
                 'cover_letter' => $data['cover_letter'] ?? null,
                 'cv_path' => 'pending',
                 'status' => 'applied',
+                'status_token' => bin2hex(random_bytes(20)),
             ]);
 
             $application->cv_path = $this->store($application, $cv, 'cv');
@@ -69,6 +73,13 @@ class RecruitmentService
     public function canTransition(string $from, string $to): bool
     {
         return in_array($to, self::TRANSITIONS[$from] ?? [], true);
+    }
+
+    public function findByToken(string $token): ?JobApplication
+    {
+        return JobApplication::with(['jobPosting', 'stageLogs'])
+            ->where('status_token', $token)
+            ->first();
     }
 
     public function moveStage(JobApplication $application, string $to, ?User $actor = null, ?string $note = null): JobApplication
