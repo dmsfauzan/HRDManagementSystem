@@ -9,8 +9,8 @@
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <x-stat-card label="Status Hari Ini" :value="$attendanceToday ? \Illuminate\Support\Str::headline($attendanceToday->status) : 'Belum Absen'" accent="emerald" />
-            <x-stat-card label="Jam Masuk" :value="$attendanceToday?->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '--:--'" accent="blue" />
-            <x-stat-card label="Jam Keluar" :value="$attendanceToday?->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '--:--'" accent="violet" />
+            <x-stat-card label="Jam Masuk" :value="$attendanceToday?->check_in_at?->timezone(tz())->format('H:i') ?? '--:--'" accent="blue" />
+            <x-stat-card label="Jam Keluar" :value="$attendanceToday?->check_out_at?->timezone(tz())->format('H:i') ?? '--:--'" accent="violet" />
             <x-stat-card label="Saldo Cuti" :value="$leaveBalances->sum('balance')" :hint="'Tahun ' . $today->format('Y')" accent="amber" />
         </div>
 
@@ -20,7 +20,7 @@
                     @if($attendanceToday?->check_out_at)
                         Absensi hari ini sudah lengkap.
                     @elseif($attendanceToday?->check_in_at)
-                        Sudah check-in pukul {{ $attendanceToday->check_in_at->timezone('Asia/Jakarta')->format('H:i') }}.
+                        Sudah check-in pukul {{ $attendanceToday->check_in_at->timezone(tz())->format('H:i') }}.
                     @else
                         Anda belum melakukan check-in hari ini.
                     @endif
@@ -56,8 +56,8 @@
                             @forelse($recentAttendance as $att)
                                 <tr>
                                     <td class="py-2 pr-4 text-slate-700">{{ $att->work_date->translatedFormat('d M Y') }}</td>
-                                    <td class="py-2 pr-4 text-slate-600">{{ $att->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '-' }}</td>
-                                    <td class="py-2 pr-4 text-slate-600">{{ $att->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '-' }}</td>
+                                    <td class="py-2 pr-4 text-slate-600">{{ $att->check_in_at?->timezone(tz())->format('H:i') ?? '-' }}</td>
+                                    <td class="py-2 pr-4 text-slate-600">{{ $att->check_out_at?->timezone(tz())->format('H:i') ?? '-' }}</td>
                                     <td class="py-2 pr-4"><x-status-badge :status="$att->status" /></td>
                                 </tr>
                             @empty

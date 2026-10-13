@@ -51,7 +51,7 @@ class EmployeeService
                 $employee->save();
             }
 
-            $year = (int) now('Asia/Jakarta')->format('Y');
+            $year = (int) now(tz())->format('Y');
             app(LeaveService::class)->ensureBalances($employee, $year);
 
             AuditLogger::log('employee.created', $employee, [], $this->snapshot($employee));

@@ -13,7 +13,7 @@ class CarryOverLeaveBalance extends Command
 
     public function handle(LeaveService $service): int
     {
-        $year = (int) ($this->option('year') ?: now('Asia/Jakarta')->format('Y'));
+        $year = (int) ($this->option('year') ?: now(tz())->format('Y'));
 
         $result = $service->carryOver($year);
 

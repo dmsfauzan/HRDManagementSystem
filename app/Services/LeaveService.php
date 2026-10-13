@@ -21,7 +21,7 @@ class LeaveService
 {
     public function ensureBalances(Employee $employee, ?int $year = null): void
     {
-        $year ??= (int) now('Asia/Jakarta')->format('Y');
+        $year ??= (int) now(tz())->format('Y');
 
         LeaveType::where('is_active', true)->where('tracks_balance', true)->get()->each(function (LeaveType $type) use ($employee, $year) {
             LeaveBalance::firstOrCreate(
@@ -147,8 +147,8 @@ class LeaveService
     public function submit(Employee $employee, array $data, ?UploadedFile $attachment = null): LeaveRequest
     {
         $type = LeaveType::findOrFail($data['leave_type_id']);
-        $start = Carbon::parse($data['start_date'], 'Asia/Jakarta');
-        $end = Carbon::parse($data['end_date'], 'Asia/Jakarta');
+        $start = Carbon::parse($data['start_date'], tz());
+        $end = Carbon::parse($data['end_date'], tz());
 
         if ($end->lt($start)) {
             throw ValidationException::withMessages(['end_date' => 'Tanggal selesai tidak boleh mendahului tanggal mulai.']);

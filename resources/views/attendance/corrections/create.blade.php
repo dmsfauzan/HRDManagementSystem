@@ -9,7 +9,7 @@
             <div class="space-y-4">
                 <div>
                     <x-input-label for="work_date" value="Tanggal Absensi *" />
-                    <x-text-input id="work_date" name="work_date" type="date" class="mt-1 block w-full" :value="old('work_date')" max="{{ now()->timezone('Asia/Jakarta')->toDateString() }}" required />
+                    <x-text-input id="work_date" name="work_date" type="date" class="mt-1 block w-full" :value="old('work_date')" max="{{ now()->timezone(tz())->toDateString() }}" required />
                     <x-input-error :messages="$errors->get('work_date')" class="mt-1" />
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">

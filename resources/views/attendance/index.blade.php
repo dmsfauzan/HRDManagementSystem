@@ -14,11 +14,11 @@
             <div class="flex flex-wrap items-center gap-4">
                 <div class="text-sm">
                     <p class="text-slate-500">Jam Masuk</p>
-                    <p class="font-semibold text-slate-900">{{ $todayRecord?->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '--:--' }}</p>
+                    <p class="font-semibold text-slate-900">{{ $todayRecord?->check_in_at?->timezone(tz())->format('H:i') ?? '--:--' }}</p>
                 </div>
                 <div class="text-sm">
                     <p class="text-slate-500">Jam Keluar</p>
-                    <p class="font-semibold text-slate-900">{{ $todayRecord?->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '--:--' }}</p>
+                    <p class="font-semibold text-slate-900">{{ $todayRecord?->check_out_at?->timezone(tz())->format('H:i') ?? '--:--' }}</p>
                 </div>
                 <div class="text-sm">
                     <p class="text-slate-500">Status</p>
@@ -49,7 +49,7 @@
             @if($period === 'daily')
                 <div>
                     <x-input-label for="date" value="Tanggal" />
-                    <x-text-input id="date" name="date" type="date" class="mt-1" :value="request('date', now()->timezone('Asia/Jakarta')->toDateString())" />
+                    <x-text-input id="date" name="date" type="date" class="mt-1" :value="request('date', now()->timezone(tz())->toDateString())" />
                 </div>
             @elseif($period === 'monthly')
                 <div>
@@ -125,8 +125,8 @@
                                     <span class="block font-medium text-slate-800">{{ $record->employee->full_name ?? '—' }}</span>
                                     <span class="block text-xs text-slate-500">{{ $record->employee->department->name ?? '—' }}</span>
                                 </td>
-                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '—' }}</td>
-                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '—' }}</td>
+                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_in_at?->timezone(tz())->format('H:i') ?? '—' }}</td>
+                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_out_at?->timezone(tz())->format('H:i') ?? '—' }}</td>
                                 <td class="py-3 pr-4 text-slate-600">{{ $record->late_minutes > 0 ? $record->late_minutes.' mnt' : '—' }}</td>
                                 <td class="py-3 pr-4"><x-status-badge :status="$record->status" /></td>
                                 <td class="py-3 pr-4 text-right">

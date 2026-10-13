@@ -12,12 +12,10 @@ use Illuminate\Validation\ValidationException;
 
 class AttendanceService
 {
-    public const TZ = 'Asia/Jakarta';
-
     public function checkIn(Employee $employee, ?string $ip = null): AttendanceRecord
     {
         return DB::transaction(function () use ($employee, $ip) {
-            $now = Carbon::now(self::TZ);
+            $now = Carbon::now(tz());
             $schedule = $employee->workSchedule;
             $workDate = $this->resolveWorkDate($now, $schedule);
 
@@ -66,7 +64,7 @@ class AttendanceService
                 ]);
             }
 
-            $now = Carbon::now(self::TZ);
+            $now = Carbon::now(tz());
 
             if ($now->lessThanOrEqualTo($record->check_in_at)) {
                 throw ValidationException::withMessages([
@@ -98,7 +96,7 @@ class AttendanceService
 
             if ($checkIn && $schedule && in_array($status, ['present', 'late', 'absent'], true)) {
                 [$status, $lateMinutes] = $this->evaluateLate(
-                    Carbon::parse($checkIn)->timezone(self::TZ),
+                    Carbon::parse($checkIn)->timezone(tz()),
                     $workDate,
                     $schedule
                 );
@@ -128,7 +126,7 @@ class AttendanceService
             return ['present', 0];
         }
 
-        $expected = Carbon::parse(Carbon::parse($workDate)->toDateString().' '.$schedule->check_in_time, self::TZ);
+        $expected = Carbon::parse(Carbon::parse($workDate)->toDateString().' '.$schedule->check_in_time, tz());
         $minutesLate = $expected->diffInMinutes($checkIn, false);
 
         if ($minutesLate > $schedule->late_tolerance_minutes) {
@@ -141,7 +139,7 @@ class AttendanceService
     public function resolveWorkDate(Carbon $now, ?WorkSchedule $schedule): string
     {
         if ($schedule && $schedule->crosses_midnight) {
-            $checkInTime = Carbon::parse($now->toDateString().' '.$schedule->check_in_time, self::TZ);
+            $checkInTime = Carbon::parse($now->toDateString().' '.$schedule->check_in_time, tz());
             if ($now->lessThan($checkInTime)) {
                 return $now->copy()->subDay()->toDateString();
             }

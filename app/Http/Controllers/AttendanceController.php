@@ -24,7 +24,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $this->authorize('viewAny', AttendanceRecord::class);
 
-        $todayStr = Carbon::today(AttendanceService::TZ)->toDateString();
+        $todayStr = Carbon::today(tz())->toDateString();
 
         $query = AttendanceRecord::with(['employee.department', 'employee.position']);
 
@@ -90,7 +90,7 @@ class AttendanceController extends Controller
         $late = $record->status === 'late' ? " Anda terlambat {$record->late_minutes} menit." : '';
 
         return redirect()->route('attendance.index')
-            ->with('success', "Check-in berhasil pukul {$record->check_in_at->timezone(AttendanceService::TZ)->format('H:i')}.{$late}");
+            ->with('success', "Check-in berhasil pukul {$record->check_in_at->timezone(tz())->format('H:i')}.{$late}");
     }
 
     public function checkout(Request $request): RedirectResponse
@@ -106,7 +106,7 @@ class AttendanceController extends Controller
         }
 
         return redirect()->route('attendance.index')
-            ->with('success', "Check-out berhasil pukul {$record->check_out_at->timezone(AttendanceService::TZ)->format('H:i')}.");
+            ->with('success', "Check-out berhasil pukul {$record->check_out_at->timezone(tz())->format('H:i')}.");
     }
 
     public function show(AttendanceRecord $attendance): View
@@ -130,7 +130,7 @@ class AttendanceController extends Controller
     private function applyPeriodFilter($query, Request $request, string $period, string $todayStr): void
     {
         if ($period === 'monthly') {
-            $month = $request->string('month', Carbon::today(AttendanceService::TZ)->format('Y-m'))->toString();
+            $month = $request->string('month', Carbon::today(tz())->format('Y-m'))->toString();
             $parts = explode('-', $month);
             $query->whereYear('work_date', (int) ($parts[0] ?? now()->year))
                 ->whereMonth('work_date', (int) ($parts[1] ?? now()->month));

@@ -21,7 +21,7 @@ class SessionController extends Controller
             ->get()
             ->map(function ($session) use ($currentId) {
                 $session->is_current = $session->id === $currentId;
-                $session->last_active_at = Carbon::createFromTimestamp($session->last_activity, 'Asia/Jakarta');
+                $session->last_active_at = Carbon::createFromTimestamp($session->last_activity, tz());
                 $session->is_this_device = $session->ip_address === request()->ip();
 
                 return $session;

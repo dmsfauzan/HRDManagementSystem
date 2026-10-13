@@ -68,8 +68,8 @@
                                     <span class="block font-medium text-slate-800">{{ $record->employee->full_name ?? '—' }}</span>
                                     <span class="block text-xs text-slate-500">{{ $record->employee->department->name ?? '—' }}</span>
                                 </td>
-                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '—' }}</td>
-                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '—' }}</td>
+                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_in_at?->timezone(tz())->format('H:i') ?? '—' }}</td>
+                                <td class="py-3 pr-4 text-slate-600">{{ $record->check_out_at?->timezone(tz())->format('H:i') ?? '—' }}</td>
                                 <td class="py-3 pr-4 text-slate-600">{{ $record->late_minutes > 0 ? $record->late_minutes.' mnt' : '—' }}</td>
                                 <td class="py-3 pr-4"><x-status-badge :status="$record->status" /></td>
                             </tr>

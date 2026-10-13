@@ -21,8 +21,8 @@ class MarkAbsentAttendance extends Command
     public function handle(AttendanceService $service): int
     {
         $date = $this->option('date')
-            ? Carbon::parse($this->option('date'), AttendanceService::TZ)->startOfDay()
-            : Carbon::today(AttendanceService::TZ);
+            ? Carbon::parse($this->option('date'), tz())->startOfDay()
+            : Carbon::today(tz());
 
         if (Holiday::whereDate('date', $date->toDateString())->exists()) {
             $this->info("{$date->toDateString()} adalah hari libur. Tidak ada yang diproses.");

@@ -72,8 +72,8 @@ class ReportController extends Controller
             $r->employee->employee_id ?? '',
             $r->employee->full_name ?? '',
             $r->employee->department->name ?? '',
-            $r->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '',
-            $r->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '',
+            $r->check_in_at?->timezone(tz())->format('H:i') ?? '',
+            $r->check_out_at?->timezone(tz())->format('H:i') ?? '',
             $r->late_minutes,
             $r->work_minutes,
             $r->status,
@@ -180,12 +180,12 @@ class ReportController extends Controller
         }
 
         if ($period === 'daily') {
-            $query->whereDate('work_date', $request->filled('date') ? $request->date('date') : Carbon::today('Asia/Jakarta'));
+            $query->whereDate('work_date', $request->filled('date') ? $request->date('date') : Carbon::today(tz()));
 
             return;
         }
 
-        $month = $request->string('month', Carbon::today('Asia/Jakarta')->format('Y-m'))->toString();
+        $month = $request->string('month', Carbon::today(tz())->format('Y-m'))->toString();
         $parts = explode('-', $month);
         $query->whereYear('work_date', (int) ($parts[0] ?? now()->year))
             ->whereMonth('work_date', (int) ($parts[1] ?? now()->month));

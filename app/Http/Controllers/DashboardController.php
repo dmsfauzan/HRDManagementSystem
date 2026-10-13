@@ -31,7 +31,7 @@ class DashboardController extends Controller
 
     private function hrdDashboard()
     {
-        $today = Carbon::today('Asia/Jakarta');
+        $today = Carbon::today(tz());
         $todayStr = $today->toDateString();
         $service = app(AttendanceService::class);
 
@@ -76,7 +76,7 @@ class DashboardController extends Controller
     private function managerDashboard()
     {
         $user = Auth::user();
-        $today = Carbon::today('Asia/Jakarta');
+        $today = Carbon::today(tz());
 
         $myEmployee = Employee::where('user_id', $user->id)->first();
         $teamQuery = Employee::query()->when($myEmployee, fn ($q) => $q->where('manager_id', $myEmployee->id));
@@ -96,7 +96,7 @@ class DashboardController extends Controller
     private function employeeDashboard()
     {
         $user = Auth::user();
-        $today = Carbon::today('Asia/Jakarta');
+        $today = Carbon::today(tz());
 
         $employee = Employee::with(['department', 'position', 'workSchedule'])->where('user_id', $user->id)->first();
         $attendanceToday = $employee

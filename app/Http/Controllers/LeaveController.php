@@ -105,7 +105,7 @@ class LeaveController extends Controller
         $this->authorize('create', LeaveRequest::class);
 
         $types = LeaveType::where('is_active', true)->orderBy('name')->get();
-        $y = (int) now('Asia/Jakarta')->format('Y');
+        $y = (int) now(tz())->format('Y');
         $me = auth()->user()->employee;
         $balances = $me
             ? $me->leaveBalances()->with('leaveType')->where('year', $y)->get()
@@ -170,8 +170,8 @@ class LeaveController extends Controller
 
         $user = $request->user();
 
-        $monthParam = $request->string('month', Carbon::today('Asia/Jakarta')->format('Y-m'))->toString();
-        $first = Carbon::createFromFormat('Y-m', $monthParam, 'Asia/Jakarta')?->startOfDay() ?? Carbon::today('Asia/Jakarta')->startOfMonth();
+        $monthParam = $request->string('month', Carbon::today(tz())->format('Y-m'))->toString();
+        $first = Carbon::createFromFormat('Y-m', $monthParam, tz())?->startOfDay() ?? Carbon::today(tz())->startOfMonth();
         $monthStart = $first->copy()->startOfMonth();
         $monthEnd = $first->copy()->endOfMonth();
 

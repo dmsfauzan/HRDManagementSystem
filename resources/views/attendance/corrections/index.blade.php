@@ -42,8 +42,8 @@
                                 </td>
                                 <td class="py-3 pr-4 text-slate-700">{{ $correction->work_date->translatedFormat('d M Y') }}</td>
                                 <td class="py-3 pr-4 text-slate-600 text-xs">
-                                    @if($correction->requested_check_in_at) Masuk {{ $correction->requested_check_in_at->timezone('Asia/Jakarta')->format('H:i') }}<br>@endif
-                                    @if($correction->requested_check_out_at) Keluar {{ $correction->requested_check_out_at->timezone('Asia/Jakarta')->format('H:i') }}@endif
+                                    @if($correction->requested_check_in_at) Masuk {{ $correction->requested_check_in_at->timezone(tz())->format('H:i') }}<br>@endif
+                                    @if($correction->requested_check_out_at) Keluar {{ $correction->requested_check_out_at->timezone(tz())->format('H:i') }}@endif
                                 </td>
                                 <td class="py-3 pr-4 text-slate-600 max-w-[260px] truncate">{{ $correction->reason }}</td>
                                 <td class="py-3 pr-4"><x-status-badge :status="$correction->status" /></td>

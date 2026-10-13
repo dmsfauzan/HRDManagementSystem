@@ -20,7 +20,7 @@ class DemoActivitySeeder extends Seeder
             return;
         }
 
-        $tz = 'Asia/Jakarta';
+        $tz = tz();
 
         foreach (range(1, 7) as $daysAgo) {
             $date = Carbon::today($tz)->subDays($daysAgo);

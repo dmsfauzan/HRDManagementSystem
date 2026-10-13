@@ -223,7 +223,7 @@
                         @else
                             <div class="text-sm font-semibold text-slate-900">Dashboard</div>
                         @endisset
-                        <p class="text-xs text-slate-500 hidden sm:block">{{ now()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y') }} &middot; WIB</p>
+                        <p class="text-xs text-slate-500 hidden sm:block">{{ now()->timezone(tz())->translatedFormat('l, d F Y') }} &middot; WIB</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">

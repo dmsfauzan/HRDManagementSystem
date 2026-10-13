@@ -105,8 +105,9 @@ Semua password: `password`
 - Sprint C/D/E Kualitas, Testing, UI (Selesai): `pint.json`, GitHub Actions CI, seeder demo kaya (15 karyawan + riwayat), unit test service, avatar pengguna, komponen `confirm-modal`.
 - **Fase 1A (Selesai):** Pengelolaan sesi (lihat & cabut perangkat), notifikasi email + antrian (`ShouldQueue` + `toMail`), Lembur (Overtime: pengajuan + approval + audit), ekspor laporan **XLSX** (tanpa paket eksternal) & **PDF/Cetak**.
 - **Fase 1B (Selesai):** Kebijakan saldo lanjutan — prorate karyawan baru, carry-over tahunan berbatas (`leave:carry-over` + scheduler), kedaluwarsa saldo; **multi-level approval** cuti (Manager → HRD untuk ≥ ambang hari, `config/leave.php`).
+- **Fase 2 (Selesai):** Kualitas — lapisan konsistensi timezone (`config('app.display_timezone')` + helper `tz()/tz_now()/tz_today()/to_tz()`; seluruh kode/view memakai helper), factory lengkap semua model, konfigurasi PHPStan/Larastan + skrip `composer analyse`, CI menambah langkah static analysis (opsional).
 
-Total: **143 test hijau** (137 feature + 6 unit).
+Total: **149 test hijau** (143 feature + 6 unit).
 
 ## Antrian (Queue)
 

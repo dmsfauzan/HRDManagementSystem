@@ -141,7 +141,7 @@ class AttendanceCorrectionController extends Controller
             return null;
         }
 
-        return Carbon::parse($time, AttendanceService::TZ)->toDateTimeString();
+        return Carbon::parse($time, tz())->toDateTimeString();
     }
 
     private function notifyApprovers(AttendanceCorrection $correction): void

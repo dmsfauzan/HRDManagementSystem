@@ -6,8 +6,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <x-card title="Data Absensi" class="lg:col-span-2">
             <dl class="grid grid-cols-2 gap-4 text-sm">
-                <div><dt class="text-slate-500">Jam Masuk</dt><dd class="text-slate-900 font-medium">{{ $record->check_in_at?->timezone('Asia/Jakarta')->format('H:i') ?? '—' }}</dd></div>
-                <div><dt class="text-slate-500">Jam Keluar</dt><dd class="text-slate-900 font-medium">{{ $record->check_out_at?->timezone('Asia/Jakarta')->format('H:i') ?? '—' }}</dd></div>
+                <div><dt class="text-slate-500">Jam Masuk</dt><dd class="text-slate-900 font-medium">{{ $record->check_in_at?->timezone(tz())->format('H:i') ?? '—' }}</dd></div>
+                <div><dt class="text-slate-500">Jam Keluar</dt><dd class="text-slate-900 font-medium">{{ $record->check_out_at?->timezone(tz())->format('H:i') ?? '—' }}</dd></div>
                 <div><dt class="text-slate-500">Status</dt><dd><x-status-badge :status="$record->status" /></dd></div>
                 <div><dt class="text-slate-500">Keterlambatan</dt><dd class="text-slate-900 font-medium">{{ $record->late_minutes }} menit</dd></div>
                 <div><dt class="text-slate-500">Durasi Kerja</dt><dd class="text-slate-900 font-medium">{{ intdiv($record->work_minutes, 60) }} jam {{ $record->work_minutes % 60 }} menit</dd></div>

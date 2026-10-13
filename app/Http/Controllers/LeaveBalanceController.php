@@ -25,7 +25,7 @@ class LeaveBalanceController extends Controller
         // Karyawan melihat saldonya sendiri; HRD melihat semuanya
         abort_unless($user->can('leave.balances_manage') || $user->employee, 403);
 
-        $year = (int) $request->input('year', now('Asia/Jakarta')->format('Y'));
+        $year = (int) $request->input('year', now(tz())->format('Y'));
 
         $query = LeaveBalance::with(['employee.department', 'leaveType']);
 

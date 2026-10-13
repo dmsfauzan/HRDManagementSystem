@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="meta">
-            Dicetak: {{ now()->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i') }} WIB
+            Dicetak: {{ now()->timezone(tz())->translatedFormat('d F Y H:i') }} WIB
         </div>
     </header>
 

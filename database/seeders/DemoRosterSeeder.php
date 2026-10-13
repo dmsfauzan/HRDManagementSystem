@@ -19,7 +19,7 @@ class DemoRosterSeeder extends Seeder
 {
     public function run(): void
     {
-        $tz = 'Asia/Jakarta';
+        $tz = tz();
         $today = Carbon::today($tz);
 
         $employees = Employee::pluck('id')->all();

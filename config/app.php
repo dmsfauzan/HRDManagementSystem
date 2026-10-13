@@ -69,6 +69,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Zona waktu yang dipakai untuk menampilkan tanggal/waktu ke pengguna.
+    | Penyimpanan tetap mengikuti timezone aplikasi di atas; tampilan selalu
+    | dikonversi ke zona ini melalui helper tz()/to_tz().
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', env('APP_TIMEZONE', 'Asia/Jakarta')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

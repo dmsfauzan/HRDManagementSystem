@@ -26,7 +26,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Support/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -49,6 +52,10 @@
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
+        ],
+        "analyse": [
+            "@php -r \"if (is_file('vendor/bin/phpstan')) { exit(0); } fwrite(STDERR, 'PHPStan tidak terpasang (install: composer require --dev larastan/larastan). Lewati.'.PHP_EOL); exit(0);\"",
+            "phpstan analyse --memory-limit=1G"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

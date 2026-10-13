@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttendanceRecord extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'employee_id', 'work_date', 'check_in_at', 'check_out_at',
         'check_in_ip', 'check_out_ip', 'status', 'late_minutes',

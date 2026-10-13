@@ -27,7 +27,7 @@
                     <tbody class="divide-y divide-slate-50">
                         @foreach($logs as $log)
                             <tr>
-                                <td class="py-3 px-2 text-slate-600 text-xs">{{ $log->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</td>
+                                <td class="py-3 px-2 text-slate-600 text-xs">{{ $log->created_at->timezone(tz())->format('d/m/Y H:i') }}</td>
                                 <td class="py-3 pr-4 text-slate-800 text-xs">{{ $log->user->name ?? 'Sistem' }}</td>
                                 <td class="py-3 pr-4">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-700">{{ $log->action }}</span>
