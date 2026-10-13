@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AuditLogController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
@@ -30,6 +32,8 @@ Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
+Route::get('/health', [HealthController::class, 'index'])->name('health');
+
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -48,6 +52,10 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::patch('/profile/two-factor/enable', [ProfileController::class, 'enableTwoFactor'])->name('profile.two-factor.enable');
     Route::patch('/profile/two-factor/disable', [ProfileController::class, 'disableTwoFactor'])->name('profile.two-factor.disable');
+
+    Route::get('/profile/api-tokens', [ApiTokenController::class, 'index'])->name('api-tokens.index');
+    Route::post('/profile/api-tokens', [ApiTokenController::class, 'store'])->name('api-tokens.store');
+    Route::delete('/profile/api-tokens/{apiToken}', [ApiTokenController::class, 'destroy'])->name('api-tokens.destroy');
 
     Route::get('roster', [RosterController::class, 'index'])->name('roster.index');
     Route::post('roster', [RosterController::class, 'store'])->name('roster.store');

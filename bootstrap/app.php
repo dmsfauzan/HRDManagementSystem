@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticateApiToken;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -13,6 +14,8 @@ use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        apiPrefix: 'api',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -22,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'auth.api' => AuthenticateApiToken::class,
         ]);
 
         $middleware->appendToGroup('web', EnsureUserIsActive::class);

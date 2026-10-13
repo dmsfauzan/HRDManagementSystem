@@ -50,6 +50,12 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by((string) ($request->user()?->id ?? $request->ip()));
         });
 
+        RateLimiter::for('api', function (Request $request) {
+            $identifier = $request->attributes->get('api_token')?->id ?? $request->ip();
+
+            return Limit::perMinute(60)->by((string) $identifier);
+        });
+
         Event::listen(Login::class, function (Login $event) {
             AuditLogger::log('auth.login', $event->user, [], ['email' => $event->user->email]);
         });

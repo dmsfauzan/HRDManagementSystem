@@ -19,3 +19,7 @@ Schedule::command('leave:carry-over')
 Schedule::command('contracts:remind')
     ->dailyAt('08:00')
     ->timezone('Asia/Jakarta');
+
+Schedule::command('db:backup')
+    ->weeklyOn(0, '01:00')
+    ->timezone('Asia/Jakarta');

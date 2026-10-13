@@ -108,8 +108,26 @@ Semua password: `password`
 - **Fase 2 (Selesai):** Kualitas — lapisan konsistensi timezone (`config('app.display_timezone')` + helper `tz()/tz_now()/tz_today()/to_tz()`; seluruh kode/view memakai helper), factory lengkap semua model, konfigurasi PHPStan/Larastan + skrip `composer analyse`, CI menambah langkah static analysis (opsional).
 - **Fase 3 (bagian 1 — Selesai):** Kebijakan password (min 12, huruf besar-kecil, angka; default global `Password::defaults()`), offboarding karyawan (resign + nonaktifkan akun + audit), pengingat kontrak (`contract_end_date` + command `contracts:remind` + scheduler harian), bulk activate/deactivate, arsip & restore soft-deleted, halaman **Struktur Organisasi**.
 - **Fase 3 (bagian 2 — Selesai):** Roster/shift **mingguan** (`schedule_assignments`, jadwal efektif per tanggal dipakai absensi & cuti), **tukar shift** (pengajuan + approval manager/HRD yang menukar jadwal mingguan), **2FA OTP email** (kolom 2FA di users, `TwoFactorService`, notifikasi kode, halaman challenge, toggle di profil) — tanpa dependensi eksternal.
+- **Fase 4 (Selesai):** REST API `/api/v1` dengan **token mandiri** (tabel `api_tokens`, `ApiTokenService`, middleware `auth.api`, rate limit 60/menit) — karena Sanctum tidak dapat dipasang; UI kelola token di Profil; endpoint me/attendance/leave/announcements. Operasional: endpoint `/health` (DB + queue), perintah `db:backup` (mysqldump + prune) terjadwal mingguan. Multi-cabang ditunda.
 
-Total: **169 test hijau** (163 feature + 6 unit).
+Total: **177 test hijau** (171 feature + 6 unit).
+
+## REST API
+
+Autentikasi: header `Authorization: Bearer <token>` (buat token di **Profil → Token API**).
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/api/v1/me` | Profil user + data karyawan |
+| GET | `/api/v1/attendance` | Riwayat absensi sendiri (paginated) |
+| POST | `/api/v1/attendance/check-in` | Check-in |
+| POST | `/api/v1/attendance/check-out` | Check-out |
+| GET | `/api/v1/leave-balances` | Saldo cuti tahun berjalan |
+| GET | `/api/v1/leaves` | Riwayat pengajuan cuti |
+| POST | `/api/v1/leaves` | Ajukan cuti |
+| GET | `/api/v1/announcements` | Pengumuman terbit |
+
+Operasional: `GET /health` (status DB & queue), `php artisan db:backup` (backup ke `storage/app/backups`).
 
 ## Antrian (Queue)
 
