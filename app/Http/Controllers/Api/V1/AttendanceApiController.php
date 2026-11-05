@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceRecord;
 use App\Services\AttendanceService;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -22,20 +23,13 @@ class AttendanceApiController extends Controller
             ->orderByDesc('work_date')
             ->paginate(20);
 
-        return response()->json([
-            'data' => collect($records->items())->map(fn (AttendanceRecord $r) => [
-                'work_date' => $r->work_date?->format('Y-m-d'),
-                'check_in_at' => $r->check_in_at?->timezone(tz())->toDateTimeString(),
-                'check_out_at' => $r->check_out_at?->timezone(tz())->toDateTimeString(),
-                'status' => $r->status,
-                'late_minutes' => $r->late_minutes,
-                'work_minutes' => $r->work_minutes,
-            ]),
-            'meta' => [
-                'current_page' => $records->currentPage(),
-                'last_page' => $records->lastPage(),
-                'total' => $records->total(),
-            ],
+        return ApiResponse::paginated($records, fn (AttendanceRecord $r) => [
+            'work_date' => $r->work_date?->format('Y-m-d'),
+            'check_in_at' => $r->check_in_at?->timezone(tz())->toDateTimeString(),
+            'check_out_at' => $r->check_out_at?->timezone(tz())->toDateTimeString(),
+            'status' => $r->status,
+            'late_minutes' => $r->late_minutes,
+            'work_minutes' => $r->work_minutes,
         ]);
     }
 
@@ -47,18 +41,15 @@ class AttendanceApiController extends Controller
         try {
             $record = $this->service->checkIn($employee, $request->ip());
         } catch (ValidationException $e) {
-            return response()->json(['message' => $e->getMessage(), 'errors' => $e->errors()], 422);
+            return ApiResponse::error($e->getMessage(), 422, $e->errors());
         }
 
-        return response()->json([
-            'message' => 'Check-in berhasil.',
-            'data' => [
-                'work_date' => $record->work_date?->format('Y-m-d'),
-                'check_in_at' => $record->check_in_at?->timezone(tz())->toDateTimeString(),
-                'status' => $record->status,
-                'late_minutes' => $record->late_minutes,
-            ],
-        ]);
+        return ApiResponse::success([
+            'work_date' => $record->work_date?->format('Y-m-d'),
+            'check_in_at' => $record->check_in_at?->timezone(tz())->toDateTimeString(),
+            'status' => $record->status,
+            'late_minutes' => $record->late_minutes,
+        ], 'Check-in berhasil.');
     }
 
     public function checkOut(Request $request): JsonResponse
@@ -69,16 +60,13 @@ class AttendanceApiController extends Controller
         try {
             $record = $this->service->checkOut($employee, $request->ip());
         } catch (ValidationException $e) {
-            return response()->json(['message' => $e->getMessage(), 'errors' => $e->errors()], 422);
+            return ApiResponse::error($e->getMessage(), 422, $e->errors());
         }
 
-        return response()->json([
-            'message' => 'Check-out berhasil.',
-            'data' => [
-                'work_date' => $record->work_date?->format('Y-m-d'),
-                'check_out_at' => $record->check_out_at?->timezone(tz())->toDateTimeString(),
-                'work_minutes' => $record->work_minutes,
-            ],
-        ]);
+        return ApiResponse::success([
+            'work_date' => $record->work_date?->format('Y-m-d'),
+            'check_out_at' => $record->check_out_at?->timezone(tz())->toDateTimeString(),
+            'work_minutes' => $record->work_minutes,
+        ], 'Check-out berhasil.');
     }
 }

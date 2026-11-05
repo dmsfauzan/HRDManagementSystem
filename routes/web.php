@@ -9,6 +9,7 @@ use App\Http\Controllers\CareerController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DocsController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HealthController;
@@ -47,6 +48,9 @@ Route::post('/karir/{job}/lamar', [CareerController::class, 'apply'])
     ->middleware('throttle:apply')->name('career.apply');
 
 Route::get('/company/logo', [CompanyProfileController::class, 'logo'])->name('company.logo');
+
+Route::get('/docs/api', [DocsController::class, 'index'])->name('docs.api');
+Route::get('/docs/api/openapi.json', [DocsController::class, 'openapi'])->name('docs.api.openapi');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

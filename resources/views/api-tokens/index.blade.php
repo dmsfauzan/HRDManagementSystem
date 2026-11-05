@@ -3,6 +3,7 @@
 
     <x-page-header title="Token API" subtitle="Token untuk mengakses REST API HRIS (/api/v1).">
         <x-slot:actions>
+            <a href="{{ route('docs.api') }}" target="_blank"><x-secondary-button>Dokumentasi API</x-secondary-button></a>
             <a href="{{ route('profile.edit') }}"><x-secondary-button>Kembali ke Profil</x-secondary-button></a>
         </x-slot:actions>
     </x-page-header>

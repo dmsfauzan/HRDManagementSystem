@@ -111,7 +111,7 @@ Semua password: `password`
 - **Fase 4 (Selesai):** REST API `/api/v1` dengan **token mandiri** (tabel `api_tokens`, `ApiTokenService`, middleware `auth.api`, rate limit 60/menit) — karena Sanctum tidak dapat dipasang; UI kelola token di Profil; endpoint me/attendance/leave/announcements. Operasional: endpoint `/health` (DB + queue), perintah `db:backup` (mysqldump + prune) terjadwal mingguan. Multi-cabang ditunda.
 - **Fase 5 Rekrutmen/ATS (Selesai):** portal karir publik `/karir` (lamar tanpa login, CV privat, honeypot + rate limit), CRUD lowongan (draft/terbit/tutup), pipeline kanban, detail pelamar, penjadwalan & hasil wawancara, **konversi hired → karyawan** sekali klik, notifikasi email/in-app, audit `recruitment.*`.
 
-Total: **200 test hijau** (194 feature + 6 unit).
+Total: **207 test hijau** (201 feature + 6 unit).
 
 ## Portal Karir & Profil Perusahaan
 
@@ -131,7 +131,7 @@ Total: **200 test hijau** (194 feature + 6 unit).
 
 ## REST API
 
-Autentikasi: header `Authorization: Bearer <token>`. Token dapat dibuat di **Profil → Token API**, atau lewat **login API**.
+Autentikasi: header `Authorization: Bearer <token>`. Token dapat dibuat di **Profil → Token API**, atau lewat **login API**. Dokumentasi interaktif: **`/docs/api`** (OpenAPI: `/docs/api/openapi.json`).
 
 **Login API**
 ```http
@@ -140,13 +140,27 @@ Content-Type: application/json
 
 {"email":"karyawan@hris.test","password":"password","device_name":"Mobile"}
 ```
-Respons: `{ "token_type": "Bearer", "token": "<64 hex>", "expires_at": "...", "user": {...} }`.
+Respons (envelope seragam):
+```json
+{
+  "success": true,
+  "message": "Login berhasil.",
+  "data": {
+    "token": "<64 hex, tanpa |>",
+    "token_type": "Bearer",
+    "expires_at": "2026-12-05T...",
+    "user": { "id": 4, "name": "Andi Wijaya", "email": "...", "roles": ["karyawan"], "permissions": ["..."] }
+  }
+}
+```
 Token berformat **64 karakter heksadesimal** (tanpa `|`). Header juga menerima format `id|token` ala Sanctum (bagian setelah `|` yang dipakai).
+
+**Envelope**: semua endpoint mengembalikan `{ "success": bool, "message": string, "data": ..., "meta": {...}, "errors": {...} }`. Error validasi → `422` dengan `errors`; auth → `401`; forbidden → `403`.
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
 | POST | `/api/v1/login` | Login & terbitkan token (rate limit 5/menit) |
-| GET | `/api/v1/me` | Profil user + data karyawan |
+| GET | `/api/v1/me` | Profil user (roles + permissions) + data karyawan |
 | GET | `/api/v1/attendance` | Riwayat absensi sendiri (paginated) |
 | POST | `/api/v1/attendance/check-in` | Check-in |
 | POST | `/api/v1/attendance/check-out` | Check-out |

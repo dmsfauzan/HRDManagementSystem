@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\ApiTokenService;
+use App\Support\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,11 +18,11 @@ class AuthenticateApiToken
         $token = $this->tokens->resolve($plain);
 
         if (! $token || ! $token->user || ! $token->user->is_active) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return ApiResponse::error('Unauthenticated.', 401);
         }
 
         if ($ability && ! $token->can($ability)) {
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return ApiResponse::error('Forbidden.', 403);
         }
 
         $request->setUserResolver(fn () => $token->user);

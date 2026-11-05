@@ -75,10 +75,16 @@ class ApiTest extends TestCase
             'device_name' => 'Mobile',
         ]);
 
-        $response->assertOk()->assertJsonStructure(['token_type', 'token', 'expires_at', 'user']);
-        $token = $response->json('token');
+        $response->assertOk()->assertJsonStructure([
+            'success',
+            'message',
+            'data' => ['token', 'token_type', 'expires_at', 'user' => ['id', 'name', 'email', 'roles', 'permissions']],
+        ])->assertJsonPath('success', true);
+
+        $token = $response->json('data.token');
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $token);
         $this->assertStringNotContainsString('|', $token);
+        $this->assertContains('employees.view', $response->json('data.user.permissions'));
 
         // Token hasil login dapat dipakai untuk mengakses endpoint terproteksi.
         $this->withHeader('Authorization', 'Bearer '.$token)
