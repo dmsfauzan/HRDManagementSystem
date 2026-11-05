@@ -14,7 +14,7 @@
         </x-card>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <a href="{{ route('reports.employees') }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-emerald-300 hover:bg-emerald-50/50 transition">
             <p class="text-sm font-semibold text-slate-900">Data Karyawan</p>
             <p class="text-xs text-slate-500 mt-1">Daftar karyawan & jumlah per departemen.</p>
@@ -26,6 +26,14 @@
         <a href="{{ route('reports.leaves') }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-emerald-300 hover:bg-emerald-50/50 transition">
             <p class="text-sm font-semibold text-slate-900">Rekap Cuti</p>
             <p class="text-xs text-slate-500 mt-1">Daftar pengajuan per status.</p>
+        </a>
+        <a href="{{ route('reports.overtime') }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-emerald-300 hover:bg-emerald-50/50 transition">
+            <p class="text-sm font-semibold text-slate-900">Rekap Lembur</p>
+            <p class="text-xs text-slate-500 mt-1">Total lembur disetujui per periode.</p>
+        </a>
+        <a href="{{ route('reports.recruitment') }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-emerald-300 hover:bg-emerald-50/50 transition">
+            <p class="text-sm font-semibold text-slate-900">Laporan Rekrutmen</p>
+            <p class="text-xs text-slate-500 mt-1">Funnel, time-to-hire, sumber pelamar.</p>
         </a>
     </div>
 </x-app-layout>

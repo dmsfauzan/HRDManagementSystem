@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\AttendanceRecord;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\JobApplication;
+use App\Models\JobPosting;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Models\Overtime;
 use App\Services\AuditLogger;
 use App\Services\CsvExporter;
 use App\Services\XlsxWriter;
@@ -87,6 +90,109 @@ class ReportController extends Controller
         $departments = Department::orderBy('name')->get();
 
         return view('reports.attendance', compact('records', 'departments'));
+    }
+
+    public function recruitment(Request $request): View|StreamedResponse|BinaryFileResponse
+    {
+        $this->authorizeReports();
+
+        $query = JobApplication::with(['jobPosting.department'])
+            ->when($request->filled('posting_id'), fn ($q) => $q->where('job_posting_id', $request->integer('posting_id')))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('created_at', '>=', $request->date('from')))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('created_at', '<=', $request->date('to')))
+            ->latest();
+
+        $headers = ['Kandidat', 'Posisi', 'Departemen', 'Status', 'Sumber', 'Tgl Lamar', 'Tgl Hired', 'Hari ke-hire'];
+
+        $rows = fn (): LazyCollection => $query->cursor()->map(function (JobApplication $a) {
+            $days = $a->hired_at ? $a->created_at->diffInDays($a->hired_at) : '';
+
+            return [
+                $a->candidate_name,
+                $a->jobPosting->title ?? '',
+                $a->jobPosting->department->name ?? '',
+                $a->status,
+                $a->source ?? '',
+                $a->created_at?->format('d/m/Y'),
+                $a->hired_at?->format('d/m/Y'),
+                $days,
+            ];
+        });
+
+        if ($response = $this->exportResponse($request, 'recruitment', 'laporan-rekrutmen', $headers, $rows, ['posting_id', 'status', 'from', 'to'])) {
+            return $response;
+        }
+
+        $applications = $query->paginate(20)->withQueryString();
+
+        $funnelQuery = JobApplication::query()
+            ->when($request->filled('posting_id'), fn ($q) => $q->where('job_posting_id', $request->integer('posting_id')))
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('created_at', '>=', $request->date('from')))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('created_at', '<=', $request->date('to')));
+
+        $funnel = (clone $funnelQuery)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $total = (clone $funnelQuery)->count();
+        $hired = (int) ($funnel['hired'] ?? 0);
+        $avgTimeToHire = (clone $funnelQuery)->whereNotNull('hired_at')->get()
+            ->avg(fn ($a) => $a->created_at->diffInDays($a->hired_at));
+        $sources = (clone $funnelQuery)->selectRaw("coalesce(source, 'lainnya') as source, count(*) as total")->groupBy('source')->pluck('total', 'source');
+
+        return view('reports.recruitment', [
+            'applications' => $applications,
+            'postings' => JobPosting::orderBy('title')->get(),
+            'funnel' => $funnel,
+            'total' => $total,
+            'hired' => $hired,
+            'avgTimeToHire' => $avgTimeToHire,
+            'sources' => $sources,
+        ]);
+    }
+
+    public function overtime(Request $request): View|StreamedResponse|BinaryFileResponse
+    {
+        $this->authorizeReports();
+
+        $query = Overtime::with(['employee.department', 'approver'])
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('department_id'), fn ($q) => $q->whereHas('employee', fn ($s) => $s->where('department_id', $request->integer('department_id'))));
+
+        $period = $request->string('period', 'monthly')->toString();
+
+        if ($period === 'range' && $request->filled(['from', 'to'])) {
+            $query->whereDate('date', '>=', $request->date('from'))->whereDate('date', '<=', $request->date('to'));
+        } elseif ($period === 'daily') {
+            $query->whereDate('date', $request->filled('date') ? $request->date('date') : tz_today());
+        } else {
+            $month = $request->string('month', tz_today()->format('Y-m'))->toString();
+            $parts = explode('-', $month);
+            $query->whereYear('date', (int) ($parts[0] ?? now()->year))->whereMonth('date', (int) ($parts[1] ?? now()->month));
+        }
+
+        $query->orderByDesc('date');
+
+        $headers = ['Tanggal', 'Karyawan', 'Departemen', 'Mulai', 'Selesai', 'Durasi (menit)', 'Status', 'Disetujui Oleh'];
+
+        $rows = fn (): LazyCollection => $query->cursor()->map(fn (Overtime $o) => [
+            $o->date?->format('d/m/Y'),
+            $o->employee->full_name ?? '',
+            $o->employee->department->name ?? '',
+            $o->startLabel(),
+            $o->endLabel(),
+            $o->duration_minutes,
+            $o->status,
+            $o->approver->name ?? '',
+        ]);
+
+        if ($response = $this->exportResponse($request, 'overtime', 'laporan-lembur', $headers, $rows, ['status', 'department_id', 'period', 'from', 'to'])) {
+            return $response;
+        }
+
+        $overtimes = $query->paginate(25)->withQueryString();
+        $approvedMinutes = (clone $query)->where('status', 'approved')->sum('duration_minutes');
+        $departments = Department::orderBy('name')->get();
+
+        return view('reports.overtime', compact('overtimes', 'approvedMinutes', 'departments', 'period'));
     }
 
     public function leaves(Request $request): View|StreamedResponse|BinaryFileResponse

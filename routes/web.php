@@ -29,6 +29,7 @@ use App\Http\Controllers\RosterController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\ShiftSwapController;
+use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
 use App\Models\CompanyProfile;
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('roster', [RosterController::class, 'index'])->name('roster.index');
     Route::post('roster', [RosterController::class, 'store'])->name('roster.store');
+
+    Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
+    Route::patch('trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore');
 
     Route::get('shift-swaps', [ShiftSwapController::class, 'index'])->name('shift-swaps.index');
     Route::get('shift-swaps/create', [ShiftSwapController::class, 'create'])->name('shift-swaps.create');
@@ -155,6 +159,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('reports/employees', [ReportController::class, 'employees'])->name('reports.employees');
         Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
         Route::get('reports/leaves', [ReportController::class, 'leaves'])->name('reports.leaves');
+        Route::get('reports/recruitment', [ReportController::class, 'recruitment'])->name('reports.recruitment');
+        Route::get('reports/overtime', [ReportController::class, 'overtime'])->name('reports.overtime');
     });
 
     Route::middleware('permission:users.manage')->group(function () {
