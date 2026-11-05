@@ -12,17 +12,18 @@ Route::prefix('v1')->group(function () {
         ->middleware('throttle:login')
         ->name('api.login');
 
-    Route::middleware(['auth.api', 'throttle:api'])->group(function () {
-        Route::get('me', [ProfileApiController::class, 'show']);
+    Route::middleware('throttle:api')->group(function () {
+        Route::get('me', [ProfileApiController::class, 'show'])->middleware('auth.api');
+        Route::post('logout', [AuthApiController::class, 'logout'])->middleware('auth.api')->name('api.logout');
 
-        Route::get('attendance', [AttendanceApiController::class, 'index']);
-        Route::post('attendance/check-in', [AttendanceApiController::class, 'checkIn']);
-        Route::post('attendance/check-out', [AttendanceApiController::class, 'checkOut']);
+        Route::get('attendance', [AttendanceApiController::class, 'index'])->middleware('auth.api:attendance:read');
+        Route::post('attendance/check-in', [AttendanceApiController::class, 'checkIn'])->middleware('auth.api:attendance:write');
+        Route::post('attendance/check-out', [AttendanceApiController::class, 'checkOut'])->middleware('auth.api:attendance:write');
 
-        Route::get('leave-balances', [LeaveApiController::class, 'balances']);
-        Route::get('leaves', [LeaveApiController::class, 'index']);
-        Route::post('leaves', [LeaveApiController::class, 'store']);
+        Route::get('leave-balances', [LeaveApiController::class, 'balances'])->middleware('auth.api:leave:read');
+        Route::get('leaves', [LeaveApiController::class, 'index'])->middleware('auth.api:leave:read');
+        Route::post('leaves', [LeaveApiController::class, 'store'])->middleware('auth.api:leave:write');
 
-        Route::get('announcements', [AnnouncementApiController::class, 'index']);
+        Route::get('announcements', [AnnouncementApiController::class, 'index'])->middleware('auth.api:announcement:read');
     });
 });

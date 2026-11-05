@@ -18,11 +18,11 @@ class AuthenticateApiToken
         $token = $this->tokens->resolve($plain);
 
         if (! $token || ! $token->user || ! $token->user->is_active) {
-            return ApiResponse::error('Unauthenticated.', 401);
+            return ApiResponse::error('Tidak terautentikasi.', 401);
         }
 
         if ($ability && ! $token->can($ability)) {
-            return ApiResponse::error('Forbidden.', 403);
+            return ApiResponse::error('Anda tidak memiliki akses untuk aksi ini.', 403);
         }
 
         $request->setUserResolver(fn () => $token->user);

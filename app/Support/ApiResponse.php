@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 class ApiResponse
 {
-    public static function success(mixed $data = null, string $message = 'OK', int $status = 200, array $meta = []): JsonResponse
+    public static function success(mixed $data = null, string $message = 'Berhasil.', int $status = 200, array $meta = []): JsonResponse
     {
         $payload = [
             'success' => true,
@@ -44,7 +44,7 @@ class ApiResponse
     /**
      * @param  callable(mixed): mixed  $transform
      */
-    public static function paginated(LengthAwarePaginator $paginator, callable $transform, string $message = 'OK'): JsonResponse
+    public static function paginated(LengthAwarePaginator $paginator, callable $transform, string $message = 'Berhasil.'): JsonResponse
     {
         return self::success(
             collect($paginator->items())->map($transform)->values(),

@@ -53,4 +53,16 @@ class AuthApiController extends Controller
             'user' => ApiResponse::userPayload($user),
         ], 'Login berhasil.');
     }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $token = $request->attributes->get('api_token');
+
+        if ($token) {
+            AuditLogger::log('api_token.logout', $token, [], ['name' => $token->name]);
+            $token->delete();
+        }
+
+        return ApiResponse::success(null, 'Logout berhasil. Token telah dicabut.');
+    }
 }

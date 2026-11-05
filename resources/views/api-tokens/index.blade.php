@@ -28,6 +28,15 @@
                 <x-input-label for="expires_in_days" value="Berlaku (hari)" />
                 <x-text-input id="expires_in_days" name="expires_in_days" type="number" min="1" max="3650" class="mt-1 block w-32" :value="old('expires_in_days')" placeholder="∞" />
             </div>
+            <div>
+                <x-input-label for="abilities_preset" value="Scope" />
+                <x-select-input id="abilities_preset" name="abilities_preset" class="mt-1 block">
+                    <option value="full" @selected(old('abilities_preset', 'full') === 'full')>Akses penuh</option>
+                    <option value="read_only" @selected(old('abilities_preset') === 'read_only')>Hanya baca</option>
+                    <option value="attendance" @selected(old('abilities_preset') === 'attendance')>Absensi</option>
+                    <option value="leave" @selected(old('abilities_preset') === 'leave')>Cuti</option>
+                </x-select-input>
+            </div>
             <x-primary-button>Buat Token</x-primary-button>
         </form>
     </x-card>

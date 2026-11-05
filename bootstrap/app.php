@@ -49,13 +49,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ApiResponse::error('Unauthenticated.', 401);
+                return ApiResponse::error('Tidak terautentikasi.', 401);
             }
         });
 
         $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ApiResponse::error($e->getMessage() ?: 'Forbidden.', 403);
+                return ApiResponse::error('Anda tidak memiliki akses untuk aksi ini.', 403);
             }
         });
 
