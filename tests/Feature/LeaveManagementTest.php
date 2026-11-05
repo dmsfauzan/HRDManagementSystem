@@ -52,6 +52,7 @@ class LeaveManagementTest extends TestCase
         LeaveBalance::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'year' => 2026,
             'balance' => 12,
             'used' => 0,
@@ -66,6 +67,7 @@ class LeaveManagementTest extends TestCase
 
         $response = $this->actingAs($user)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'reason' => 'Keperluan keluarga.',
@@ -85,6 +87,7 @@ class LeaveManagementTest extends TestCase
 
         $this->actingAs($user)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-14',
             'end_date' => '2026-10-12',
             'reason' => 'Tes.',
@@ -98,6 +101,7 @@ class LeaveManagementTest extends TestCase
 
         $this->actingAs($user)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'reason' => 'Tes saldo kurang.',
@@ -116,6 +120,7 @@ class LeaveManagementTest extends TestCase
 
         $this->actingAs($user)->post('/leave', [
             'leave_type_id' => $sick->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-13',
             'reason' => 'Sakit.',
@@ -130,6 +135,7 @@ class LeaveManagementTest extends TestCase
 
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'reason' => 'Cuti.',
@@ -160,6 +166,7 @@ class LeaveManagementTest extends TestCase
         // 2 hari kerja (di bawah ambang 3 hari) -> cukup Manager.
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-13',
             'reason' => 'Cuti singkat.',
@@ -179,6 +186,7 @@ class LeaveManagementTest extends TestCase
 
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'reason' => 'Cuti.',
@@ -203,6 +211,7 @@ class LeaveManagementTest extends TestCase
         $hrdUser = $this->hrdUser();
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'reason' => 'Cuti.',
@@ -225,6 +234,7 @@ class LeaveManagementTest extends TestCase
         $leave = LeaveRequest::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'total_days' => 3,
@@ -242,6 +252,7 @@ class LeaveManagementTest extends TestCase
         $leave = LeaveRequest::create([
             'employee_id' => $other->id,
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'total_days' => 3,
@@ -258,6 +269,7 @@ class LeaveManagementTest extends TestCase
         [$empUser, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $this->annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-12',
             'end_date' => '2026-10-14',
             'reason' => 'Cuti.',

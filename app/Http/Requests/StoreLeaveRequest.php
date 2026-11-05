@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\LeaveRequest;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreLeaveRequest extends FormRequest
 {
@@ -18,6 +19,7 @@ class StoreLeaveRequest extends FormRequest
             'leave_type_id' => ['required', 'exists:leave_types,id'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'duration_type' => ['required', Rule::in(['full_day', 'half_day_am', 'half_day_pm'])],
             'reason' => ['required', 'string', 'max:1000'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
         ];

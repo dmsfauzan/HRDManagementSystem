@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Employee;
 use App\Models\Overtime;
 use App\Models\User;
+use App\Services\OvertimeService;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -78,12 +79,37 @@ class OvertimeTest extends TestCase
     {
         [$managerUser, $manager] = $this->employeeUser('manager');
         [, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
-        $overtime = Overtime::factory()->create(['employee_id' => $employee->id]);
+        $overtime = app(OvertimeService::class)->submit($employee, [
+            'date' => tz_today()->subDay()->toDateString(),
+            'start_at' => '17:00',
+            'end_at' => '19:00',
+            'reason' => 'Lembur singkat.',
+        ]);
 
         $this->actingAs($managerUser)->patch("/overtime/{$overtime->id}/decide", ['action' => 'approved'])->assertRedirect();
 
         $this->assertSame('approved', $overtime->fresh()->status);
         $this->assertDatabaseHas('approval_actions', ['approvable_id' => $overtime->id, 'action' => 'approved']);
+    }
+
+    public function test_long_overtime_requires_two_levels(): void
+    {
+        [$managerUser, $manager] = $this->employeeUser('manager');
+        [, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
+        $hrdUser = $this->employeeUser('hrd_admin')[0];
+
+        $overtime = app(OvertimeService::class)->submit($employee, [
+            'date' => tz_today()->subDay()->toDateString(),
+            'start_at' => '17:00',
+            'end_at' => '21:00', // 4 jam >= ambang 3 jam
+            'reason' => 'Lembur panjang.',
+        ]);
+
+        $this->actingAs($managerUser)->patch("/overtime/{$overtime->id}/decide", ['action' => 'approved']);
+        $this->assertSame('pending', $overtime->fresh()->status);
+
+        $this->actingAs($hrdUser)->patch("/overtime/{$overtime->id}/decide", ['action' => 'approved']);
+        $this->assertSame('approved', $overtime->fresh()->status);
     }
 
     public function test_employee_cannot_decide_overtime(): void
@@ -96,9 +122,17 @@ class OvertimeTest extends TestCase
 
     public function test_processed_overtime_cannot_be_redecided(): void
     {
-        [$hrdUser] = $this->employeeUser('hrd_admin');
-        [, $employee] = $this->employeeUser();
-        $overtime = Overtime::factory()->create(['employee_id' => $employee->id, 'status' => 'approved']);
+        [$managerUser, $manager] = $this->employeeUser('manager');
+        [, $employee] = $this->employeeUser('karyawan', ['manager_id' => $manager->id]);
+        $hrdUser = $this->employeeUser('hrd_admin')[0];
+
+        $overtime = app(OvertimeService::class)->submit($employee, [
+            'date' => tz_today()->subDay()->toDateString(),
+            'start_at' => '17:00',
+            'end_at' => '19:00',
+            'reason' => 'Lembur singkat.',
+        ]);
+        $this->actingAs($managerUser)->patch("/overtime/{$overtime->id}/decide", ['action' => 'approved']);
 
         $response = $this->actingAs($hrdUser)->patch("/overtime/{$overtime->id}/decide", ['action' => 'rejected', 'decision_note' => 'ubah']);
 

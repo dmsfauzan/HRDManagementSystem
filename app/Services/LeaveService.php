@@ -158,13 +158,30 @@ class LeaveService
             throw ValidationException::withMessages(['attachment' => 'Jenis cuti ini wajib melampirkan dokumen.']);
         }
 
-        $totalDays = $this->calculateWorkingDays($employee, $start, $end);
+        $durationType = $data['duration_type'] ?? 'full_day';
+        $isHalfDay = $durationType !== 'full_day';
 
-        if ($totalDays < 1) {
+        if ($isHalfDay) {
+            if (! $start->isSameDay($end)) {
+                throw ValidationException::withMessages(['end_date' => 'Cuti setengah hari hanya berlaku untuk satu hari.']);
+            }
+
+            $workDay = $this->calculateWorkingDays($employee, $start, $start);
+
+            if ($workDay < 1) {
+                throw ValidationException::withMessages(['start_date' => 'Tanggal yang dipilih bukan hari kerja.']);
+            }
+
+            $totalDays = 0.5;
+        } else {
+            $totalDays = $this->calculateWorkingDays($employee, $start, $end);
+        }
+
+        if ($totalDays < 0.5) {
             throw ValidationException::withMessages(['start_date' => 'Rentang tanggal tidak memuat hari kerja.']);
         }
 
-        return DB::transaction(function () use ($employee, $type, $data, $start, $end, $totalDays, $attachment) {
+        return DB::transaction(function () use ($employee, $type, $data, $start, $end, $totalDays, $attachment, $durationType) {
             if ($type->tracks_balance) {
                 $balance = $this->lockedBalance($employee, $type, (int) $start->format('Y'));
 
@@ -180,6 +197,7 @@ class LeaveService
                 'leave_type_id' => $type->id,
                 'start_date' => $start->toDateString(),
                 'end_date' => $end->toDateString(),
+                'duration_type' => $durationType,
                 'total_days' => $totalDays,
                 'reason' => $data['reason'],
                 'status' => LeaveRequest::STATUS_PENDING,

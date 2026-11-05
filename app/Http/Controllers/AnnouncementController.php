@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAnnouncementRequest;
 use App\Models\Announcement;
+use App\Models\AnnouncementRead;
 use App\Models\User;
 use App\Notifications\AnnouncementPublished;
 use App\Services\AuditLogger;
@@ -24,12 +25,24 @@ class AnnouncementController extends Controller
 
     public function index(Request $request): View
     {
-        $canManage = $request->user()->can('leave.manage');
+        $user = $request->user();
+        $canManage = $user->can('leave.manage');
 
-        $announcements = ($canManage ? Announcement::with('author') : Announcement::published()->with('author'))
+        $announcements = ($canManage
+                ? Announcement::with('author')->withCount('reads')
+                : Announcement::published()->with('author'))
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->paginate(15);
+
+        if (! $canManage) {
+            foreach ($announcements as $announcement) {
+                AnnouncementRead::firstOrCreate(
+                    ['announcement_id' => $announcement->id, 'user_id' => $user->id],
+                    ['read_at' => now()]
+                );
+            }
+        }
 
         return view('announcements.index', compact('announcements', 'canManage'));
     }

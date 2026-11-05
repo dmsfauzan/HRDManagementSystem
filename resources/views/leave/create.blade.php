@@ -33,6 +33,16 @@
                         </div>
                     </div>
                     <div>
+                        <x-input-label for="duration_type" value="Durasi *" />
+                        <x-select-input id="duration_type" name="duration_type" class="mt-1 block w-full">
+                            <option value="full_day" @selected(old('duration_type', 'full_day') === 'full_day')>Sehari penuh</option>
+                            <option value="half_day_am" @selected(old('duration_type') === 'half_day_am')>Setengah hari (pagi)</option>
+                            <option value="half_day_pm" @selected(old('duration_type') === 'half_day_pm')>Setengah hari (siang)</option>
+                        </x-select-input>
+                        <p class="text-xs text-slate-500 mt-1">Cuti setengah hari hanya untuk satu tanggal (mulai = selesai).</p>
+                        <x-input-error :messages="$errors->get('duration_type')" class="mt-1" />
+                    </div>
+                    <div>
                         <x-input-label for="reason" value="Alasan *" />
                         <x-textarea-input id="reason" name="reason" rows="4" class="mt-1">{{ old('reason') }}</x-textarea-input>
                         <x-input-error :messages="$errors->get('reason')" class="mt-1" />

@@ -29,6 +29,7 @@
                             <p class="text-xs text-slate-500 mt-0.5">
                                 {{ $announcement->author->name ?? 'Sistem' }}
                                 @if($announcement->published_at) &middot; {{ $announcement->published_at->translatedFormat('d M Y H:i') }} @endif
+                                @if($canManage && isset($announcement->reads_count)) &middot; {{ $announcement->reads_count }} pembaca @endif
                             </p>
                             <p class="mt-3 text-sm text-slate-700 whitespace-pre-line">{{ $announcement->body }}</p>
                         </div>

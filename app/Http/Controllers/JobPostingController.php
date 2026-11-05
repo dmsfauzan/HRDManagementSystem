@@ -20,10 +20,14 @@ class JobPostingController extends Controller
     {
         abort_unless(auth()->user()->can('recruitment.view'), 403);
 
-        $postings = JobPosting::with(['department', 'position'])
-            ->withCount('applications')
-            ->latest()
-            ->paginate(15);
+        $query = JobPosting::with(['department', 'position'])->withCount('applications');
+
+        if (! auth()->user()->can('recruitment.manage')) {
+            $departmentId = auth()->user()->employee?->department_id;
+            $query->where('department_id', $departmentId ?? 0);
+        }
+
+        $postings = $query->latest()->paginate(15);
 
         return view('recruitment.postings.index', [
             'postings' => $postings,

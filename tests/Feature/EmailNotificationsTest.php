@@ -35,6 +35,7 @@ class EmailNotificationsTest extends TestCase
 
         $this->actingAs($empUser)->post('/leave', [
             'leave_type_id' => $annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-20',
             'end_date' => '2026-10-22',
             'reason' => 'Keperluan keluarga',
@@ -60,6 +61,7 @@ class EmailNotificationsTest extends TestCase
         LeaveBalance::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $annual->id,
+            'duration_type' => 'full_day',
             'year' => 2026,
             'balance' => 12,
             'used' => 0,
@@ -68,6 +70,7 @@ class EmailNotificationsTest extends TestCase
         $leave = LeaveRequest::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $annual->id,
+            'duration_type' => 'full_day',
             'start_date' => '2026-10-20',
             'end_date' => '2026-10-22',
             'total_days' => 3.00,
@@ -104,6 +107,7 @@ class EmailNotificationsTest extends TestCase
         LeaveBalance::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $annual->id,
+            'duration_type' => 'full_day',
             'year' => 2026,
             'balance' => 12,
             'used' => 0,

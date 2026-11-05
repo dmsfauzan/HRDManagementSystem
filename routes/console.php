@@ -23,3 +23,7 @@ Schedule::command('contracts:remind')
 Schedule::command('db:backup')
     ->weeklyOn(0, '01:00')
     ->timezone('Asia/Jakarta');
+
+Schedule::command('recruitment:purge')
+    ->monthlyOn(1, '03:00')
+    ->timezone('Asia/Jakarta');

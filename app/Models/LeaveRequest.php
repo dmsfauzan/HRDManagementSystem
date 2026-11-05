@@ -20,7 +20,7 @@ class LeaveRequest extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'employee_id', 'leave_type_id', 'start_date', 'end_date',
+        'employee_id', 'leave_type_id', 'start_date', 'end_date', 'duration_type',
         'total_days', 'reason', 'attachment_path', 'status',
         'requested_at', 'approver_id', 'decided_at', 'decision_note',
     ];

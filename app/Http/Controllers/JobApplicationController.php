@@ -59,6 +59,7 @@ class JobApplicationController extends Controller
     public function show(JobApplication $jobApplication): View
     {
         $this->guardView();
+        $this->authorizeApplication(request(), $jobApplication);
 
         $jobApplication->load(['jobPosting.department', 'stageLogs.actor', 'interviews.decider', 'employee']);
 
@@ -142,6 +143,7 @@ class JobApplicationController extends Controller
     {
         $user = $request->user();
         abort_unless($user->can('recruitment.view'), 403);
+        $this->authorizeApplication($request, $jobApplication);
 
         abort_unless($jobApplication->cv_path && Storage::disk('private')->exists($jobApplication->cv_path), 404);
 
@@ -151,6 +153,7 @@ class JobApplicationController extends Controller
     public function photo(Request $request, JobApplication $jobApplication): StreamedResponse
     {
         abort_unless($request->user()->can('recruitment.view'), 403);
+        $this->authorizeApplication($request, $jobApplication);
 
         abort_unless($jobApplication->photo_path && Storage::disk('private')->exists($jobApplication->photo_path), 404);
 
@@ -166,10 +169,30 @@ class JobApplicationController extends Controller
     {
         $query = JobApplication::with(['jobPosting.department']);
 
+        $user = $request->user();
+
+        if (! $user->can('recruitment.manage')) {
+            $departmentId = $user->employee?->department_id;
+            $query->whereHas('jobPosting', fn ($q) => $q->where('department_id', $departmentId ?? 0));
+        }
+
         if ($request->filled('posting_id')) {
             $query->where('job_posting_id', $request->integer('posting_id'));
         }
 
         return $query;
+    }
+
+    private function authorizeApplication(Request $request, JobApplication $application): void
+    {
+        $user = $request->user();
+
+        if ($user->can('recruitment.manage')) {
+            return;
+        }
+
+        $departmentId = $user->employee?->department_id;
+
+        abort_unless($departmentId && $application->jobPosting?->department_id === $departmentId, 403);
     }
 }
