@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ApiTokenService;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ApiTest extends TestCase
@@ -40,6 +41,90 @@ class ApiTest extends TestCase
     public function test_api_rejects_missing_token(): void
     {
         $this->getJson('/api/v1/me')->assertStatus(401);
+    }
+
+    public function test_generated_token_is_hex_without_pipe(): void
+    {
+        $user = User::factory()->create(['is_active' => true]);
+        [, $plain] = app(ApiTokenService::class)->issue($user, 'format');
+
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $plain);
+        $this->assertStringNotContainsString('|', $plain);
+    }
+
+    public function test_bearer_token_with_sanctum_style_prefix_is_accepted(): void
+    {
+        [$user] = $this->employeeUser();
+
+        $this->withHeader('Authorization', 'Bearer 99|'.$this->tokenFor($user))
+            ->getJson('/api/v1/me')
+            ->assertOk();
+    }
+
+    public function test_api_login_returns_token_without_pipe(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('Password12345'),
+            'is_active' => true,
+        ]);
+        $user->assignRole('karyawan');
+
+        $response = $this->postJson('/api/v1/login', [
+            'email' => $user->email,
+            'password' => 'Password12345',
+            'device_name' => 'Mobile',
+        ]);
+
+        $response->assertOk()->assertJsonStructure(['token_type', 'token', 'expires_at', 'user']);
+        $token = $response->json('token');
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $token);
+        $this->assertStringNotContainsString('|', $token);
+
+        // Token hasil login dapat dipakai untuk mengakses endpoint terproteksi.
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/me')
+            ->assertOk()
+            ->assertJsonPath('data.email', $user->email);
+    }
+
+    public function test_api_login_rejects_wrong_password(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('Password12345'),
+            'is_active' => true,
+        ]);
+
+        $this->postJson('/api/v1/login', [
+            'email' => $user->email,
+            'password' => 'salah-password',
+        ])->assertStatus(401);
+    }
+
+    public function test_api_login_rejects_inactive_account(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('Password12345'),
+            'is_active' => false,
+        ]);
+
+        $this->postJson('/api/v1/login', [
+            'email' => $user->email,
+            'password' => 'Password12345',
+        ])->assertStatus(403);
+    }
+
+    public function test_api_login_rejects_two_factor_account(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('Password12345'),
+            'is_active' => true,
+            'two_factor_enabled' => true,
+        ]);
+
+        $this->postJson('/api/v1/login', [
+            'email' => $user->email,
+            'password' => 'Password12345',
+        ])->assertStatus(422);
     }
 
     public function test_api_rejects_invalid_token(): void

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\ApiToken;
 use App\Models\User;
-use Illuminate\Support\Str;
 
 class ApiTokenService
 {
@@ -15,7 +14,8 @@ class ApiTokenService
      */
     public function issue(User $user, string $name, array $abilities = ['*'], ?\DateTimeInterface $expiresAt = null): array
     {
-        $plain = Str::random(64);
+        // 64 karakter heksadesimal: aman untuk header Authorization, tanpa karakter '|'.
+        $plain = bin2hex(random_bytes(32));
 
         $token = ApiToken::create([
             'user_id' => $user->id,

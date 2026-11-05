@@ -11,6 +11,7 @@
         <x-card class="mb-6" title="Token Baru Dibuat">
             <p class="text-sm text-slate-600">Salin token ini sekarang — tidak akan ditampilkan lagi.</p>
             <pre class="mt-3 p-3 bg-slate-900 text-emerald-300 rounded-lg text-xs overflow-x-auto">{{ $plainToken }}</pre>
+            <p class="mt-2 text-xs text-slate-500">Gunakan token <strong>apa adanya</strong> pada header <code class="font-mono">Authorization: Bearer &lt;token&gt;</code> — jangan menambahkan <code class="font-mono">id|</code> atau spasi.</p>
         </x-card>
     @endif
 

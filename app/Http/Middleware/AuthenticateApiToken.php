@@ -13,7 +13,7 @@ class AuthenticateApiToken
 
     public function handle(Request $request, Closure $next, ?string $ability = null): Response
     {
-        $plain = $request->bearerToken();
+        $plain = $this->normalizeToken($request->bearerToken());
         $token = $this->tokens->resolve($plain);
 
         if (! $token || ! $token->user || ! $token->user->is_active) {
@@ -28,5 +28,22 @@ class AuthenticateApiToken
         $request->attributes->set('api_token', $token);
 
         return $next($request);
+    }
+
+    /**
+     * Terima format token biasa maupun format ala Sanctum "id|token".
+     */
+    private function normalizeToken(?string $bearer): ?string
+    {
+        if (! $bearer) {
+            return null;
+        }
+
+        if (str_contains($bearer, '|')) {
+            $parts = explode('|', $bearer);
+            $bearer = end($parts) ?: null;
+        }
+
+        return $bearer;
     }
 }

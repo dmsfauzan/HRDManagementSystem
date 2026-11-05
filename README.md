@@ -111,7 +111,7 @@ Semua password: `password`
 - **Fase 4 (Selesai):** REST API `/api/v1` dengan **token mandiri** (tabel `api_tokens`, `ApiTokenService`, middleware `auth.api`, rate limit 60/menit) — karena Sanctum tidak dapat dipasang; UI kelola token di Profil; endpoint me/attendance/leave/announcements. Operasional: endpoint `/health` (DB + queue), perintah `db:backup` (mysqldump + prune) terjadwal mingguan. Multi-cabang ditunda.
 - **Fase 5 Rekrutmen/ATS (Selesai):** portal karir publik `/karir` (lamar tanpa login, CV privat, honeypot + rate limit), CRUD lowongan (draft/terbit/tutup), pipeline kanban, detail pelamar, penjadwalan & hasil wawancara, **konversi hired → karyawan** sekali klik, notifikasi email/in-app, audit `recruitment.*`.
 
-Total: **194 test hijau** (188 feature + 6 unit).
+Total: **200 test hijau** (194 feature + 6 unit).
 
 ## Portal Karir & Profil Perusahaan
 
@@ -131,10 +131,21 @@ Total: **194 test hijau** (188 feature + 6 unit).
 
 ## REST API
 
-Autentikasi: header `Authorization: Bearer <token>` (buat token di **Profil → Token API**).
+Autentikasi: header `Authorization: Bearer <token>`. Token dapat dibuat di **Profil → Token API**, atau lewat **login API**.
+
+**Login API**
+```http
+POST /api/v1/login
+Content-Type: application/json
+
+{"email":"karyawan@hris.test","password":"password","device_name":"Mobile"}
+```
+Respons: `{ "token_type": "Bearer", "token": "<64 hex>", "expires_at": "...", "user": {...} }`.
+Token berformat **64 karakter heksadesimal** (tanpa `|`). Header juga menerima format `id|token` ala Sanctum (bagian setelah `|` yang dipakai).
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
+| POST | `/api/v1/login` | Login & terbitkan token (rate limit 5/menit) |
 | GET | `/api/v1/me` | Profil user + data karyawan |
 | GET | `/api/v1/attendance` | Riwayat absensi sendiri (paginated) |
 | POST | `/api/v1/attendance/check-in` | Check-in |
