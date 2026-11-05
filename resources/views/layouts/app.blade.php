@@ -270,6 +270,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <x-search-palette />
                     @php($unreadCount = auth()->user()->unreadNotifications->count())
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open=!open" class="relative p-2 rounded-full hover:bg-slate-100" aria-label="Notifikasi">
@@ -329,20 +330,23 @@
             </div>
         </header>
 
-        @if (session('success'))
-            <div class="mx-4 sm:mx-6 lg:mx-8 mt-4">
-                <div class="flex items-center gap-2 px-4 py-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
-                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    {{ session('success') }}
-                </div>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="mx-4 sm:mx-6 lg:mx-8 mt-4">
-                <div class="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
-                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    {{ session('error') }}
-                </div>
+        @if (session('success') || session('error'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show" x-transition
+                class="fixed bottom-4 right-4 z-50 w-full max-w-sm space-y-2" role="status" aria-live="polite">
+                @if (session('success'))
+                    <div class="flex items-start gap-2 px-4 py-3 rounded-lg bg-emerald-600 text-white shadow-lg text-sm">
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="flex-1">{{ session('success') }}</span>
+                        <button type="button" @click="show = false" class="opacity-70 hover:opacity-100" aria-label="Tutup">&times;</button>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-600 text-white shadow-lg text-sm">
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="flex-1">{{ session('error') }}</span>
+                        <button type="button" @click="show = false" class="opacity-70 hover:opacity-100" aria-label="Tutup">&times;</button>
+                    </div>
+                @endif
             </div>
         @endif
 

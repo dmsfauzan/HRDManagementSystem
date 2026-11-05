@@ -1,6 +1,11 @@
 <x-app-layout>
     <x-slot name="header">Laporan Rekrutmen</x-slot>
 
+    <x-breadcrumbs :items="[
+        ['label' => 'Laporan', 'url' => route('reports.index')],
+        ['label' => 'Rekrutmen'],
+    ]" />
+
     <x-page-header title="Laporan Rekrutmen" subtitle="Funnel, time-to-hire, dan sumber pelamar.">
         <x-slot:actions>
             <a href="{{ route('reports.recruitment', request()->query() + ['format' => 'xlsx']) }}"><x-secondary-button>Excel</x-secondary-button></a>

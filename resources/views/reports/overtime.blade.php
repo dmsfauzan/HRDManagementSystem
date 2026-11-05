@@ -1,6 +1,11 @@
 <x-app-layout>
     <x-slot name="header">Rekap Lembur</x-slot>
 
+    <x-breadcrumbs :items="[
+        ['label' => 'Laporan', 'url' => route('reports.index')],
+        ['label' => 'Lembur'],
+    ]" />
+
     <x-page-header title="Rekap Lembur" subtitle="Total lembur disetujui dan rincian per karyawan.">
         <x-slot:actions>
             <a href="{{ route('reports.overtime', request()->query() + ['format' => 'xlsx']) }}"><x-secondary-button>Excel</x-secondary-button></a>

@@ -57,10 +57,17 @@ class EmployeeController extends Controller
             })
             ->when($request->filled('department_id'), fn ($q) => $q->where('department_id', $request->integer('department_id')))
             ->when($request->filled('status'), fn ($q) => $q->where('employment_status', $request->string('status')))
-            ->when($request->filled('type'), fn ($q) => $q->where('employment_type', $request->string('type')))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+            ->when($request->filled('type'), fn ($q) => $q->where('employment_type', $request->string('type')));
+
+        $sortable = ['full_name', 'employee_id', 'join_date', 'employment_status'];
+        $sort = $request->string('sort')->toString();
+        $direction = $request->string('direction', 'asc')->toString() === 'desc' ? 'desc' : 'asc';
+
+        if (in_array($sort, $sortable, true)) {
+            $employees = $employees->orderBy($sort, $direction)->paginate(15)->withQueryString();
+        } else {
+            $employees = $employees->latest()->paginate(15)->withQueryString();
+        }
 
         $departments = Department::orderBy('name')->get();
 

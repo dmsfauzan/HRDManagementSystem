@@ -56,15 +56,27 @@
             <div class="overflow-x-auto -mx-5">
                 <table class="min-w-full text-sm">
                     <thead>
+                        @php
+                            $sortKey = request('sort');
+                            $dirKey = request('direction', 'asc');
+                        @endphp
                         <tr class="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-slate-100">
                             @can('employees.manage')
                                 <th class="py-2 px-2 font-medium"><input type="checkbox" onclick="document.querySelectorAll('.row-check').forEach(c=>c.checked=this.checked)" class="rounded border-slate-300 text-emerald-600"></th>
                             @endcan
-                            <th class="py-2 px-2 font-medium">Karyawan</th>
+                            <th class="py-2 px-2 font-medium">
+                                <a href="{{ route('employees.index', array_merge(request()->query(), ['sort' => 'full_name', 'direction' => ($sortKey === 'full_name' && $dirKey === 'asc') ? 'desc' : 'asc'])) }}" class="hover:text-slate-800">
+                                    Karyawan @if($sortKey === 'full_name'){{ $dirKey === 'asc' ? '↑' : '↓' }}@endif
+                                </a>
+                            </th>
                             <th class="py-2 pr-4 font-medium">Department / Jabatan</th>
                             <th class="py-2 pr-4 font-medium">Atasan</th>
                             <th class="py-2 pr-4 font-medium">Tipe</th>
-                            <th class="py-2 pr-4 font-medium">Status</th>
+                            <th class="py-2 pr-4 font-medium">
+                                <a href="{{ route('employees.index', array_merge(request()->query(), ['sort' => 'employment_status', 'direction' => ($sortKey === 'employment_status' && $dirKey === 'asc') ? 'desc' : 'asc'])) }}" class="hover:text-slate-800">
+                                    Status @if($sortKey === 'employment_status'){{ $dirKey === 'asc' ? '↑' : '↓' }}@endif
+                                </a>
+                            </th>
                             <th class="py-2 pr-4 font-medium"></th>
                         </tr>
                     </thead>

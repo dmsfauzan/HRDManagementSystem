@@ -1,6 +1,12 @@
 <x-app-layout>
     <x-slot name="header">Detail Karyawan</x-slot>
 
+    <x-breadcrumbs :items="[
+        ['label' => 'Dashboard', 'url' => route('dashboard')],
+        ['label' => 'Karyawan', 'url' => route('employees.index')],
+        ['label' => $employee->full_name],
+    ]" />
+
     <x-page-header :title="$employee->full_name" :subtitle="'NIP ' . $employee->employee_id">
         <x-slot:actions>
             @can('update', $employee)

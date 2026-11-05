@@ -26,6 +26,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RosterController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\ShiftSwapController;
@@ -89,6 +90,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
     Route::patch('trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore');
+
+    Route::get('search', [SearchController::class, 'index'])->name('search.index');
 
     Route::get('shift-swaps', [ShiftSwapController::class, 'index'])->name('shift-swaps.index');
     Route::get('shift-swaps/create', [ShiftSwapController::class, 'create'])->name('shift-swaps.create');
