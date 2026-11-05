@@ -213,13 +213,37 @@ Backup harian (contoh, jalankan via cron/Task Scheduler):
 mysqldump -u root -p HRDManagementSystem > backup/hris_$(date +%Y%m%d).sql
 ```
 
-Restore:
+Atau lewat aplikasi (menyimpan ke `storage/app/backups`, prune otomatis):
 
 ```sh
-mysql -u root -p HRDManagementSystem < backup/hris_YYYYMMDD.sql
+php artisan db:backup
 ```
 
-Simpan berkas backup di luar `public/` (mis. `storage/backups`) dan lindungi aksesnya.
+Restore (pilih berkas di `storage/app/backups` atau path absolut):
+
+```sh
+php artisan db:restore
+php artisan db:restore hris_20260101_010000.sql --force
+```
+
+Simpan berkas backup di luar `public/` dan lindungi aksesnya.
+
+### Queue worker & scheduler (production)
+
+- Queue worker: contoh Supervisor di `deploy/supervisor-hris-worker.conf`.
+- Scheduler: cron `* * * * * cd /path && php artisan schedule:run` atau systemd timer — lihat `deploy/scheduler.md`.
+
+### Health check
+
+`GET /health` mengembalikan JSON status `database`, `queue` (pending/failed), `disk` (free/total), dan `scheduler` (heartbeat 5 menit, dianggap `stale` bila > 15 menit). Status `503` bila ada komponen yang gagal.
+
+### Coverage test (opsional)
+
+```sh
+php artisan test --coverage --min=50
+```
+
+Job coverage di CI bersifat opsional (`continue-on-error`).
 
 ### Checklist keamanan
 
