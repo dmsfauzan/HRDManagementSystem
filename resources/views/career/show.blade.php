@@ -183,6 +183,10 @@
                                     <x-input-label for="photo" value="Foto (opsional)" />
                                     <input type="file" id="photo" name="photo" accept="image/*" class="mt-1 block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-slate-100 file:text-slate-700">
                                 </div>
+                                <label class="flex items-start gap-2 text-xs text-slate-600">
+                                    <input type="checkbox" name="privacy_consent" value="1" @checked(old('privacy_consent')) class="mt-0.5 rounded border-slate-300 text-emerald-600" required>
+                                    <span>Saya menyetujui <a href="{{ route('privacy') }}" target="_blank" class="text-emerald-700 underline">kebijakan privasi</a> dan pemrosesan data pribadi untuk proses rekrutmen.</span>
+                                </label>
                             </div>
 
                             <x-input-error :messages="$errors->all()" class="mt-2" />

@@ -89,6 +89,7 @@ class CareerPortalTest extends TestCase
         $this->post("/karir/{$posting->id}/lamar", [
             'candidate_name' => 'Terlambat',
             'candidate_email' => 'late@example.com',
+            'privacy_consent' => '1',
             'cv' => UploadedFile::fake()->create('cv.pdf', 50, 'application/pdf'),
         ])->assertRedirect();
 
@@ -114,6 +115,7 @@ class CareerPortalTest extends TestCase
             'linkedin_url' => 'https://linkedin.com/in/kandidat',
             'portfolio_url' => 'https://portfolio.example.com',
             'expected_salary' => 12000000,
+            'privacy_consent' => '1',
             'cv' => UploadedFile::fake()->create('cv.pdf', 60, 'application/pdf'),
         ])->assertRedirect();
 

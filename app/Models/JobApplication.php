@@ -18,7 +18,7 @@ class JobApplication extends Model
         'domicile', 'birth_date', 'education', 'experience_years', 'source',
         'linkedin_url', 'portfolio_url', 'expected_salary',
         'cover_letter', 'cv_path', 'photo_path', 'status', 'rejection_reason',
-        'status_token', 'employee_id', 'hired_at',
+        'status_token', 'privacy_consented_at', 'employee_id', 'hired_at',
     ];
 
     protected function casts(): array
@@ -28,6 +28,7 @@ class JobApplication extends Model
             'experience_years' => 'integer',
             'expected_salary' => 'decimal:2',
             'hired_at' => 'datetime',
+            'privacy_consented_at' => 'datetime',
         ];
     }
 

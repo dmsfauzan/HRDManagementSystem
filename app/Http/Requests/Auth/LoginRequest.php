@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Services\AuditLogger;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -45,6 +46,11 @@ class LoginRequest extends FormRequest
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            AuditLogger::log('auth.login_failed', null, [], [
+                'email' => $this->string('email')->toString(),
+                'reason' => 'invalid_credentials',
+            ]);
+
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
@@ -54,6 +60,11 @@ class LoginRequest extends FormRequest
             Auth::logout();
 
             RateLimiter::hit($this->throttleKey());
+
+            AuditLogger::log('auth.login_failed', null, [], [
+                'email' => $this->string('email')->toString(),
+                'reason' => 'inactive_account',
+            ]);
 
             throw ValidationException::withMessages([
                 'email' => 'Akun Anda tidak aktif. Silakan hubungi administrator.',
@@ -75,6 +86,10 @@ class LoginRequest extends FormRequest
         }
 
         event(new Lockout($this));
+
+        AuditLogger::log('auth.login_throttled', null, [], [
+            'email' => $this->string('email')->toString(),
+        ]);
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 

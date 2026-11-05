@@ -31,6 +31,7 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\ShiftSwapController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
+use App\Models\CompanyProfile;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -48,6 +49,8 @@ Route::post('/karir/{job}/lamar', [CareerController::class, 'apply'])
     ->middleware('throttle:apply')->name('career.apply');
 
 Route::get('/company/logo', [CompanyProfileController::class, 'logo'])->name('company.logo');
+
+Route::get('/kebijakan-privasi', fn () => view('career.privacy', ['company' => CompanyProfile::current()]))->name('privacy');
 
 Route::get('/docs/api', [DocsController::class, 'index'])->name('docs.api');
 Route::get('/docs/api/openapi.json', [DocsController::class, 'openapi'])->name('docs.api.openapi');

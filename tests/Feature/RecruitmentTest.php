@@ -44,6 +44,7 @@ class RecruitmentTest extends TestCase
         $this->post("/karir/{$posting->id}/lamar", [
             'candidate_name' => 'Kandidat Satu',
             'candidate_email' => 'kandidat@example.com',
+            'privacy_consent' => '1',
             'cv' => UploadedFile::fake()->create('cv.pdf', 100, 'application/pdf'),
         ])->assertRedirect();
 
@@ -72,6 +73,7 @@ class RecruitmentTest extends TestCase
         $this->post("/karir/{$posting->id}/lamar", [
             'candidate_name' => 'Tanpa CV',
             'candidate_email' => 'nocv@example.com',
+            'privacy_consent' => '1',
         ])->assertSessionHasErrors('cv');
     }
 

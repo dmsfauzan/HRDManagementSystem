@@ -35,6 +35,17 @@ class RecruitmentService
             throw ValidationException::withMessages(['job' => 'Lowongan ini tidak tersedia.']);
         }
 
+        $alreadyApplied = JobApplication::where('job_posting_id', $posting->id)
+            ->where('candidate_email', $data['candidate_email'])
+            ->whereIn('status', ['applied', 'screening', 'interview', 'offer', 'hired'])
+            ->exists();
+
+        if ($alreadyApplied) {
+            throw ValidationException::withMessages([
+                'candidate_email' => 'Email ini sudah memiliki lamaran aktif untuk posisi tersebut.',
+            ]);
+        }
+
         return DB::transaction(function () use ($posting, $data, $cv, $photo) {
             $application = JobApplication::create([
                 'job_posting_id' => $posting->id,
@@ -53,6 +64,7 @@ class RecruitmentService
                 'cv_path' => 'pending',
                 'status' => 'applied',
                 'status_token' => bin2hex(random_bytes(20)),
+                'privacy_consented_at' => now(),
             ]);
 
             $application->cv_path = $this->store($application, $cv, 'cv');
